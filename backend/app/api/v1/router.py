@@ -8,6 +8,8 @@ from app.api.v1.complaints import router as complaints_router
 from app.api.v1.staff import router as staff_router
 from app.api.v1.payments import router as payments_router
 from app.api.v1.dashboard import router as dashboard_router
+from app.api.v1.webhooks_sms import router as sms_router
+from app.api.v1.webhooks_whatsapp import router as whatsapp_router
 
 api_v1_router = APIRouter()
 api_v1_router.include_router(auth_router)
@@ -19,3 +21,5 @@ api_v1_router.include_router(complaints_router)
 api_v1_router.include_router(staff_router)
 api_v1_router.include_router(payments_router)
 api_v1_router.include_router(dashboard_router)
+api_v1_router.include_router(sms_router)
+api_v1_router.include_router(whatsapp_router)
