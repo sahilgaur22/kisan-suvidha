@@ -1,0 +1,44 @@
+{
+  "app_name": "Kisan Suvidha",
+  "tagline": "Dynamic MSP Token & Queue Management",
+  "nav": {
+    "home": "Home",
+    "book_slot": "Book Slot",
+    "my_bookings": "My Bookings",
+    "complaints": "Grievance Redressal",
+    "login": "Portal Login",
+    "logout": "Logout",
+    "language": "Language"
+  },
+  "landing": {
+    "hero_badge": "Dynamic AI Queue Engine & Guaranteed MSP Payouts",
+    "hero_title_1": "Eliminate Mandi Line Queues with ",
+    "hero_title_highlight": "Smart Token Schedules",
+    "hero_subtitle": "Seamless procurement slot booking for farmers via Web, WhatsApp, and SMS. Real-time dynamic queue recalculation and zero data leakage.",
+    "cta_book": "Book Procurement Slot",
+    "cta_login": "Admin & Staff Portal"
+  },
+  "booking": {
+    "title": "Book Procurement Slot",
+    "select_center": "Select Procurement Center",
+    "crop_name": "Select Crop",
+    "crop_volume": "Crop Weight (Quintals)",
+    "vehicle_type": "Vehicle Type",
+    "booking_date": "Preferred Date",
+    "submit": "Confirm & Reserve Token",
+    "success_title": "Token Booking Confirmed!",
+    "token_number": "Token Number",
+    "arrival_window": "Guaranteed Arrival Window"
+  },
+  "auth": {
+    "login_title": "Portal Login",
+    "admin_login": "Center Admin / Super Admin Login",
+    "staff_login": "Ground Staff Login",
+    "farmer_login": "Farmer OTP Verification",
+    "phone": "Mobile Number",
+    "password": "Password",
+    "otp": "6-Digit OTP",
+    "send_otp": "Send OTP Code",
+    "verify_otp": "Verify OTP & Login"
+  }
+}
