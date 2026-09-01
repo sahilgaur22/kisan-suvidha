@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import QueryProvider from "../lib/query-provider";
 
 export const metadata: Metadata = {
   title: "Kisan Suvidha — Dynamic MSP Token & Queue Management",
@@ -16,7 +17,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="antialiased bg-slate-50 text-slate-900 min-h-screen">
-        {children}
+        <QueryProvider>{children}</QueryProvider>
       </body>
     </html>
   );
