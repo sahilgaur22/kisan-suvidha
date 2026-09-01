@@ -6,6 +6,8 @@ from app.api.v1.centers import router as centers_router
 from app.api.v1.msp import router as msp_router
 from app.api.v1.complaints import router as complaints_router
 from app.api.v1.staff import router as staff_router
+from app.api.v1.payments import router as payments_router
+from app.api.v1.dashboard import router as dashboard_router
 
 api_v1_router = APIRouter()
 api_v1_router.include_router(auth_router)
@@ -15,3 +17,5 @@ api_v1_router.include_router(centers_router)
 api_v1_router.include_router(msp_router)
 api_v1_router.include_router(complaints_router)
 api_v1_router.include_router(staff_router)
+api_v1_router.include_router(payments_router)
+api_v1_router.include_router(dashboard_router)
