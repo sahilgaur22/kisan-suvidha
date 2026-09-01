@@ -7,6 +7,6 @@ def test_alembic_config_and_script_discovery():
     alembic_cfg = Config("backend/alembic.ini")
     script = ScriptDirectory.from_config(alembic_cfg)
     revisions = list(script.walk_revisions())
-    assert len(revisions) >= 1
+    assert len(revisions) >= 2
     head_revision = script.get_current_head()
-    assert head_revision == "001_initial_schema"
+    assert head_revision == "002_row_level_security"
