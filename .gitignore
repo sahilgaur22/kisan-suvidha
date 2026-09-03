@@ -56,3 +56,9 @@ kisan_suvidha_dev.db
 *~
 .DS_Store
 
+# Media & Video Recordings
+*.mp4
+*.webm
+*.mov
+*.avi
+docs/demo/
