@@ -43,6 +43,11 @@ npm-debug.log*
 .env.test.local
 .env.production.local
 
+# Databases & Local SQLite
+*.db
+*.sqlite3
+kisan_suvidha_dev.db
+
 # IDEs & Editors
 .vscode/
 .idea/
@@ -50,3 +55,4 @@ npm-debug.log*
 *.swo
 *~
 .DS_Store
+

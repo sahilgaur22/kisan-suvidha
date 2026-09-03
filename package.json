@@ -1,0 +1,11 @@
+{
+  "name": "kisan-suvidha",
+  "version": "1.0.0",
+  "description": "Kisan Suvidha - Mandi Dynamic Queue Optimization Portal",
+  "private": true,
+  "scripts": {
+    "dev": "npx concurrently -k -n \"BACKEND,FRONTEND\" -c \"cyan.bold,green.bold\" \"cd backend && ..\\venv\\Scripts\\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload\" \"cd frontend && npm run dev\"",
+    "start": "start.bat",
+    "stop": "end.bat"
+  }
+}
