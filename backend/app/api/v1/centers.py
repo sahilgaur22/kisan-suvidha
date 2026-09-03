@@ -8,7 +8,7 @@ from app.database import get_db
 from app.models.center import Center
 from app.schemas.center_schema import CenterCreateRequest, CenterResponse
 from app.core.deps import get_current_user_context, CurrentUser
-from app.core.rbac import require_roles, SUPER_ADMIN
+from app.core.rbac import require_roles, CENTER_ADMIN
 
 router = APIRouter(prefix="/centers", tags=["Center Management"])
 
@@ -19,16 +19,14 @@ async def list_centers(
     district: Optional[str] = None,
     db: AsyncSession = Depends(get_db),
 ):
-    """Lists all active procurement centers filterable by state or district."""
-    stmt = select(Center).where(Center.is_active.is_(True))
-
+    """Lists procurement centers with optional state and district filters."""
+    query = select(Center)
     if state:
-        stmt = stmt.where(Center.state.ilike(f"%{state}%"))
+        query = query.where(Center.state == state)
     if district:
-        stmt = stmt.where(Center.district.ilike(f"%{district}%"))
+        query = query.where(Center.district == district)
 
-    stmt = stmt.order_by(Center.name.asc())
-    result = await db.execute(stmt)
+    result = await db.execute(query)
     centers = result.scalars().all()
 
     return [
@@ -56,11 +54,11 @@ async def create_center(
     current_user: CurrentUser = Depends(get_current_user_context),
     db: AsyncSession = Depends(get_db),
 ):
-    """Creates a new procurement center (Super Admin only)."""
-    if current_user.role != SUPER_ADMIN:
+    """Creates a new procurement center (Center Admin only)."""
+    if current_user.role != CENTER_ADMIN:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Permission denied. Only Super Admin can create centers.",
+            detail="Permission denied. Only Center Admins can create centers.",
         )
 
     # Check code uniqueness

@@ -1,5 +1,7 @@
 "use client";
 
+import { UserCheck, ShieldCheck, UserPlus } from "lucide-react";
+
 export type LoginTab = "admin" | "staff" | "farmer";
 
 interface LoginToggleProps {
@@ -7,41 +9,46 @@ interface LoginToggleProps {
   onTabChange: (tab: LoginTab) => void;
 }
 
-export default function LoginToggle({ activeTab, onTabChange }: LoginToggleProps) {
+export default function LoginToggle({
+  activeTab,
+  onTabChange,
+}: LoginToggleProps) {
   return (
-    <div className="flex bg-slate-800/80 p-1 rounded-xl border border-slate-700/60 text-xs font-semibold mb-6">
-      <button
-        type="button"
-        onClick={() => onTabChange("admin")}
-        className={`flex-1 py-2.5 rounded-lg transition-all ${
-          activeTab === "admin"
-            ? "bg-emerald-500 text-slate-950 font-bold shadow-md shadow-emerald-500/20"
-            : "text-slate-400 hover:text-slate-200"
-        }`}
-      >
-        Center Admin
-      </button>
-      <button
-        type="button"
-        onClick={() => onTabChange("staff")}
-        className={`flex-1 py-2.5 rounded-lg transition-all ${
-          activeTab === "staff"
-            ? "bg-emerald-500 text-slate-950 font-bold shadow-md shadow-emerald-500/20"
-            : "text-slate-400 hover:text-slate-200"
-        }`}
-      >
-        Ground Staff
-      </button>
+    <div className="bg-[#404E3B] p-1.5 rounded-2xl border border-[#6C8480]/50 grid grid-cols-3 gap-1 mb-6 text-xs font-bold">
       <button
         type="button"
         onClick={() => onTabChange("farmer")}
-        className={`flex-1 py-2.5 rounded-lg transition-all ${
+        className={`py-2 px-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5 ${
           activeTab === "farmer"
-            ? "bg-emerald-500 text-slate-950 font-bold shadow-md shadow-emerald-500/20"
-            : "text-slate-400 hover:text-slate-200"
+            ? "bg-[#7B9669] text-white shadow-md font-extrabold"
+            : "text-[#BAC8B1] hover:text-white"
         }`}
       >
-        Farmer OTP
+        <UserPlus className="w-3.5 h-3.5" /> Farmer OTP
+      </button>
+
+      <button
+        type="button"
+        onClick={() => onTabChange("staff")}
+        className={`py-2 px-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5 ${
+          activeTab === "staff"
+            ? "bg-[#7B9669] text-white shadow-md font-extrabold"
+            : "text-[#BAC8B1] hover:text-white"
+        }`}
+      >
+        <UserCheck className="w-3.5 h-3.5" /> Staff
+      </button>
+
+      <button
+        type="button"
+        onClick={() => onTabChange("admin")}
+        className={`py-2 px-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5 ${
+          activeTab === "admin"
+            ? "bg-[#7B9669] text-white shadow-md font-extrabold"
+            : "text-[#BAC8B1] hover:text-white"
+        }`}
+      >
+        <ShieldCheck className="w-3.5 h-3.5" /> Admin
       </button>
     </div>
   );

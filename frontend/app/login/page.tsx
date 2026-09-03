@@ -3,66 +3,132 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Sprout, Lock, Phone, ArrowLeft, ShieldAlert } from "lucide-react";
+import { Sprout, Lock, Phone, User, ArrowLeft, ShieldAlert, UserPlus, LogIn, Mail, ShieldCheck, CheckCircle2, Building2 } from "lucide-react";
 import LoginToggle, { LoginTab } from "../../components/auth/LoginToggle";
+import LanguageSwitcher from "../../components/LanguageSwitcher";
 import { useAuthStore } from "../../store/authStore";
+import { useUIStore } from "../../store/uiStore";
+import { getTranslation } from "../../lib/i18n";
 import { apiClient } from "../../lib/api-client";
+import { useProcurementCenters } from "../../hooks/useBookings";
 
 export default function LoginPage() {
   const router = useRouter();
   const setAuth = useAuthStore((state) => state.setAuth);
+  const language = useUIStore((state) => state.language);
+  const t = getTranslation(language);
+  const { data: centers } = useProcurementCenters();
 
-  const [activeTab, setActiveTab] = useState<LoginTab>("admin");
+  const [activeTab, setActiveTab] = useState<LoginTab>("farmer");
+  const [subMode, setSubMode] = useState<"login" | "register">("login");
+
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
+  const [selectedCenterId, setSelectedCenterId] = useState("");
   const [otp, setOtp] = useState("");
   const [otpSent, setOtpSent] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
-  const handleAdminStaffLogin = async (e: React.FormEvent) => {
+  const resetForm = () => {
+    setErrorMsg(null);
+    setSuccessMsg(null);
+    setOtpSent(false);
+    setFullName("");
+    setEmail("");
+    setPhone("");
+    setPassword("");
+    setSelectedCenterId("");
+    setOtp("");
+  };
+
+  const handleAdminStaffSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg(null);
+    setSuccessMsg(null);
     setLoading(true);
 
+    const roleToAssign = activeTab === "admin" ? "center_admin" : "staff";
+
     try {
-      const data = await apiClient<{
-        access_token: string;
-        user: {
-          id: string;
+      if (subMode === "register") {
+        // Register New Admin or Ground Staff Account
+        const regData = await apiClient<{
+          access_token: string;
+          user_id: string;
           full_name: string;
-          phone: string;
-          role: "super_admin" | "center_admin" | "staff" | "farmer";
+          role: "center_admin" | "staff";
           center_id: string | null;
-        };
-      }>("/auth/login", {
-        method: "POST",
-        body: JSON.stringify({
-          phone,
-          password,
-          login_context: activeTab,
-        }),
-      });
+        }>("/auth/register", {
+          method: "POST",
+          body: JSON.stringify({
+            full_name: fullName,
+            email,
+            phone: phone || "9876543210",
+            password,
+            role: roleToAssign,
+            center_id: selectedCenterId || undefined,
+          }),
+        });
 
-      setAuth(
-        {
-          id: data.user.id,
-          fullName: data.user.full_name,
-          phone: data.user.phone,
-          role: data.user.role,
-          centerId: data.user.center_id,
-        },
-        data.access_token
-      );
+        if (roleToAssign === "staff") {
+          setSuccessMsg("Registration successful! Ground staff account was created and is pending approval by the Center Admin.");
+          setSubMode("login");
+          return;
+        }
 
-      if (data.user.role === "center_admin" || data.user.role === "super_admin") {
+        // If Center Admin, log in immediately with token returned
+        setAuth(
+          {
+            id: regData.user_id,
+            fullName: regData.full_name,
+            phone: phone,
+            role: regData.role,
+            centerId: regData.center_id,
+          },
+          regData.access_token
+        );
         router.push("/admin/dashboard");
       } else {
-        router.push("/staff/queue");
+        // Login Existing Admin or Staff
+        const data = await apiClient<{
+          access_token: string;
+          user_id: string;
+          full_name: string;
+          role: "center_admin" | "staff";
+          center_id: string | null;
+        }>("/auth/login", {
+          method: "POST",
+          body: JSON.stringify({
+            email,
+            password,
+            login_context: activeTab === "admin" ? "center_admin" : activeTab,
+          }),
+        });
+
+        setAuth(
+          {
+            id: data.user_id,
+            fullName: data.full_name,
+            phone: "",
+            role: data.role,
+            centerId: data.center_id,
+          },
+          data.access_token
+        );
+
+        if (data.role === "center_admin") {
+          router.push("/admin/dashboard");
+        } else {
+          router.push("/staff/queue");
+        }
       }
     } catch (err: any) {
-      setErrorMsg(err.message || "Invalid credentials or unauthorized login context.");
+      setErrorMsg(err.message || "Operation failed. Please check your credentials.");
     } finally {
       setLoading(false);
     }
@@ -71,12 +137,13 @@ export default function LoginPage() {
   const handleRequestOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg(null);
+    setSuccessMsg(null);
     setLoading(true);
 
     try {
-      await apiClient("/auth/farmer/otp/request", {
+      await apiClient("/auth/farmer/otp/send", {
         method: "POST",
-        body: JSON.stringify({ phone }),
+        body: JSON.stringify({ phone, full_name: fullName || undefined }),
       });
       setOtpSent(true);
     } catch (err: any) {
@@ -89,33 +156,32 @@ export default function LoginPage() {
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg(null);
+    setSuccessMsg(null);
     setLoading(true);
 
     try {
       const data = await apiClient<{
         access_token: string;
-        farmer: {
-          id: string;
-          full_name: string;
-          phone: string;
-        };
+        farmer_id: string;
+        full_name: string;
+        phone: string;
       }>("/auth/farmer/otp/verify", {
         method: "POST",
-        body: JSON.stringify({ phone, otp }),
+        body: JSON.stringify({ phone, otp, full_name: fullName || undefined }),
       });
 
       setAuth(
         {
-          id: data.farmer.id,
-          fullName: data.farmer.full_name,
-          phone: data.farmer.phone,
+          id: data.farmer_id,
+          fullName: data.full_name || fullName || "Farmer",
+          phone: data.phone,
           role: "farmer",
           centerId: null,
         },
         data.access_token
       );
 
-      router.push("/my-bookings");
+      router.push("/book-slot");
     } catch (err: any) {
       setErrorMsg(err.message || "Invalid OTP code.");
     } finally {
@@ -124,68 +190,210 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 flex flex-col justify-between text-slate-100 p-6">
+    <div className="min-h-screen bg-[#F8FAFC] flex flex-col justify-between text-slate-900 p-6">
       <header className="max-w-md mx-auto w-full pt-4 flex items-center justify-between">
         <Link
           href="/"
-          className="inline-flex items-center gap-2 text-xs font-semibold text-emerald-400 hover:text-emerald-300 transition-all"
+          className="inline-flex items-center gap-2 text-xs font-bold text-[#404E3B] hover:text-[#7B9669] transition-all bg-white px-3 py-1.5 rounded-xl border border-[#BAC8B1] shadow-sm"
         >
-          <ArrowLeft className="w-4 h-4" /> Back to Home
+          <ArrowLeft className="w-4 h-4" /> {t.nav.home}
         </Link>
+        <LanguageSwitcher />
       </header>
 
-      <main className="max-w-md mx-auto w-full bg-slate-900/90 border border-slate-800 p-8 rounded-3xl shadow-2xl backdrop-blur my-8">
+      <main className="max-w-md mx-auto w-full bg-[#404E3B] border-2 border-[#BAC8B1]/50 p-8 rounded-3xl shadow-2xl text-white my-8">
         <div className="flex items-center justify-center gap-3 mb-6">
-          <div className="bg-emerald-500 p-2.5 rounded-2xl text-slate-950">
+          <div className="bg-[#7B9669] p-2.5 rounded-2xl text-white shadow">
             <Sprout className="w-7 h-7" />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-white">Kisan Suvidha</h1>
-            <p className="text-xs text-emerald-400">Portal Login</p>
+            <h1 className="text-2xl font-black text-white">{t.app_name}</h1>
+            <p className="text-xs text-[#BAC8B1] font-semibold">
+              {activeTab === "farmer"
+                ? subMode === "login"
+                  ? t.auth.existing_farmer
+                  : t.auth.new_farmer
+                : activeTab === "admin"
+                ? subMode === "login"
+                  ? "Center Admin Portal Access"
+                  : "Create New Center Admin"
+                : subMode === "login"
+                ? "Ground Staff Access"
+                : "Register New Ground Staff"}
+            </p>
           </div>
         </div>
 
-        <LoginToggle activeTab={activeTab} onTabChange={setActiveTab} />
+        <LoginToggle
+          activeTab={activeTab}
+          onTabChange={(tab) => {
+            setActiveTab(tab);
+            resetForm();
+          }}
+        />
+
+        {/* Sub-Toggle for Login vs Registration across all roles */}
+        <div className="grid grid-cols-2 gap-2 p-1 bg-[#404E3B] border border-[#6C8480] rounded-xl mb-6 text-xs font-bold">
+          <button
+            type="button"
+            onClick={() => {
+              setSubMode("login");
+              resetForm();
+            }}
+            className={`py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 ${
+              subMode === "login"
+                ? "bg-[#7B9669] text-white shadow"
+                : "text-[#BAC8B1] hover:text-white"
+            }`}
+          >
+            <LogIn className="w-3.5 h-3.5" /> Existing {activeTab === "farmer" ? "Farmer" : activeTab === "admin" ? "Admin" : "Staff"} Login
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setSubMode("register");
+              resetForm();
+            }}
+            className={`py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 ${
+              subMode === "register"
+                ? "bg-[#7B9669] text-white shadow"
+                : "text-[#BAC8B1] hover:text-white"
+            }`}
+          >
+            <UserPlus className="w-3.5 h-3.5" /> New {activeTab === "farmer" ? "Farmer" : activeTab === "admin" ? "Admin" : "Staff"} Registration
+          </button>
+        </div>
+
+        {/* Staff Admin Approval Info Notice */}
+        {activeTab === "staff" && (
+          <div className="p-3 mb-4 bg-[#7B9669]/20 border border-[#7B9669]/50 rounded-xl text-[11px] text-[#BAC8B1] space-y-1">
+            <div className="flex items-center gap-1.5 text-white font-bold">
+              <ShieldCheck className="w-3.5 h-3.5 text-[#7B9669]" /> Ground Staff Approval Notice
+            </div>
+            <p>{t.auth.staff_notice}</p>
+          </div>
+        )}
+
+        {successMsg && (
+          <div className="mb-6 p-3.5 bg-[#7B9669]/30 border border-[#7B9669] rounded-xl text-white text-xs flex items-center gap-2 font-semibold">
+            <CheckCircle2 className="w-4 h-4 shrink-0 text-[#7B9669]" />
+            {successMsg}
+          </div>
+        )}
 
         {errorMsg && (
-          <div className="mb-6 p-3.5 bg-rose-950/60 border border-rose-800/80 rounded-xl text-rose-300 text-xs flex items-center gap-2">
-            <ShieldAlert className="w-4 h-4 shrink-0 text-rose-400" />
+          <div className="mb-6 p-3.5 bg-rose-900/80 border border-rose-600 rounded-xl text-rose-100 text-xs flex items-center gap-2 font-semibold">
+            <ShieldAlert className="w-4 h-4 shrink-0 text-rose-300" />
             {errorMsg}
           </div>
         )}
 
         {activeTab !== "farmer" ? (
-          <form onSubmit={handleAdminStaffLogin} className="space-y-4">
+          <form onSubmit={handleAdminStaffSubmit} className="space-y-4">
+            {subMode === "register" && (
+              <div>
+                <label htmlFor="fullName" className="block text-xs font-bold text-[#BAC8B1] mb-1.5">
+                  Full Name <span className="text-rose-300">*</span>
+                </label>
+                <div className="relative">
+                  <User className="w-4 h-4 text-[#BAC8B1] absolute left-3.5 top-3.5" />
+                  <input
+                    id="fullName"
+                    name="fullName"
+                    type="text"
+                    required
+                    placeholder="Enter full name"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    className="w-full bg-[#404E3B] border-2 border-[#6C8480] rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:border-[#7B9669] transition-all font-bold"
+                  />
+                </div>
+              </div>
+            )}
+
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                Mobile Number
+              <label htmlFor="email" className="block text-xs font-bold text-[#BAC8B1] mb-1.5">
+                {t.auth.email_label} <span className="text-rose-300">*</span>
               </label>
               <div className="relative">
-                <Phone className="w-4 h-4 text-slate-500 absolute left-3.5 top-3.5" />
+                <Mail className="w-4 h-4 text-[#BAC8B1] absolute left-3.5 top-3.5" />
                 <input
-                  type="text"
+                  id="email"
+                  name="email"
+                  type="email"
                   required
-                  placeholder="10-digit mobile number"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:border-emerald-500 transition-all"
+                  placeholder={
+                    activeTab === "admin"
+                      ? "admin@kisansuvidha.gov.in"
+                      : "staff@kisansuvidha.gov.in"
+                  }
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full bg-[#404E3B] border-2 border-[#6C8480] rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:border-[#7B9669] transition-all font-semibold"
                 />
               </div>
             </div>
 
+            {subMode === "register" && (
+              <>
+                <div>
+                  <label htmlFor="centerId" className="block text-xs font-bold text-[#BAC8B1] mb-1.5 flex items-center gap-1.5">
+                    <Building2 className="w-3.5 h-3.5 text-[#7B9669]" /> Assigned Procurement Mandi Center <span className="text-rose-300">*</span>
+                  </label>
+                  <select
+                    id="centerId"
+                    name="centerId"
+                    required
+                    value={selectedCenterId}
+                    onChange={(e) => setSelectedCenterId(e.target.value)}
+                    className="w-full bg-[#404E3B] border-2 border-[#6C8480] rounded-xl py-2.5 px-3 text-xs text-white focus:outline-none focus:border-[#7B9669] transition-all font-bold"
+                  >
+                    <option value="">-- Choose Assigned Procurement Center --</option>
+                    {centers?.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.name} ({c.code} - {c.district}, {c.state})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label htmlFor="phone" className="block text-xs font-bold text-[#BAC8B1] mb-1.5">
+                    Mobile Phone Number <span className="text-rose-300">*</span>
+                  </label>
+                  <div className="relative">
+                    <Phone className="w-4 h-4 text-[#BAC8B1] absolute left-3.5 top-3.5" />
+                    <input
+                      id="phone"
+                      name="phone"
+                      type="text"
+                      required
+                      placeholder="10-digit mobile number"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      className="w-full bg-[#404E3B] border-2 border-[#6C8480] rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:border-[#7B9669] transition-all font-semibold"
+                    />
+                  </div>
+                </div>
+              </>
+            )}
+
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                Password
+              <label htmlFor="password" className="block text-xs font-bold text-[#BAC8B1] mb-1.5">
+                {t.auth.password_label} <span className="text-rose-300">*</span>
               </label>
               <div className="relative">
-                <Lock className="w-4 h-4 text-slate-500 absolute left-3.5 top-3.5" />
+                <Lock className="w-4 h-4 text-[#BAC8B1] absolute left-3.5 top-3.5" />
                 <input
+                  id="password"
+                  name="password"
                   type="password"
                   required
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:border-emerald-500 transition-all"
+                  className="w-full bg-[#404E3B] border-2 border-[#6C8480] rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:border-[#7B9669] transition-all"
                 />
               </div>
             </div>
@@ -193,46 +401,75 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full mt-2 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm transition-all shadow-lg shadow-emerald-500/20 disabled:opacity-50"
+              className="w-full mt-2 py-3.5 rounded-xl bg-[#7B9669] hover:bg-[#6C8480] text-white font-black text-sm transition-all shadow-lg disabled:opacity-50"
             >
-              {loading ? "Authenticating..." : `Login as ${activeTab === "admin" ? "Center Admin" : "Ground Staff"}`}
+              {loading
+                ? "Processing..."
+                : subMode === "register"
+                ? `Create & Register ${activeTab === "admin" ? "Center Admin" : "Ground Staff"}`
+                : `Login as ${activeTab === "admin" ? "Center Admin" : "Ground Staff"}`}
             </button>
           </form>
         ) : (
           <form onSubmit={otpSent ? handleVerifyOtp : handleRequestOtp} className="space-y-4">
+            {subMode === "register" && !otpSent && (
+              <div>
+                <label htmlFor="farmerFullName" className="block text-xs font-bold text-[#BAC8B1] mb-1.5">
+                  {t.auth.full_name_label} <span className="text-rose-300">*</span>
+                </label>
+                <div className="relative">
+                  <User className="w-4 h-4 text-[#BAC8B1] absolute left-3.5 top-3.5" />
+                  <input
+                    id="farmerFullName"
+                    name="farmerFullName"
+                    type="text"
+                    required
+                    placeholder="Enter your full name"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    className="w-full bg-[#404E3B] border-2 border-[#6C8480] rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:border-[#7B9669] transition-all font-bold"
+                  />
+                </div>
+              </div>
+            )}
+
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                Farmer Mobile Number
+              <label htmlFor="farmerPhone" className="block text-xs font-bold text-[#BAC8B1] mb-1.5">
+                {t.auth.phone_label} <span className="text-rose-300">*</span>
               </label>
               <div className="relative">
-                <Phone className="w-4 h-4 text-slate-500 absolute left-3.5 top-3.5" />
+                <Phone className="w-4 h-4 text-[#BAC8B1] absolute left-3.5 top-3.5" />
                 <input
+                  id="farmerPhone"
+                  name="farmerPhone"
                   type="text"
                   required
                   disabled={otpSent}
                   placeholder="10-digit mobile number"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:border-emerald-500 transition-all disabled:opacity-60"
+                  className="w-full bg-[#404E3B] border-2 border-[#6C8480] rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:border-[#7B9669] transition-all disabled:opacity-60 font-bold"
                 />
               </div>
             </div>
 
             {otpSent && (
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                  Enter 6-Digit OTP Code
+                <label htmlFor="otp" className="block text-xs font-bold text-[#BAC8B1] mb-1.5">
+                  {t.auth.otp_label}
                 </label>
                 <div className="relative">
-                  <Lock className="w-4 h-4 text-slate-500 absolute left-3.5 top-3.5" />
+                  <Lock className="w-4 h-4 text-[#BAC8B1] absolute left-3.5 top-3.5" />
                   <input
+                    id="otp"
+                    name="otp"
                     type="text"
                     required
                     maxLength={6}
                     placeholder="123456"
                     value={otp}
                     onChange={(e) => setOtp(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:border-emerald-500 transition-all tracking-widest text-center font-bold"
+                    className="w-full bg-[#404E3B] border-2 border-[#6C8480] rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:border-[#7B9669] transition-all tracking-widest text-center font-bold"
                   />
                 </div>
               </div>
@@ -241,16 +478,24 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full mt-2 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm transition-all shadow-lg shadow-emerald-500/20 disabled:opacity-50"
+              className="w-full mt-2 py-3.5 rounded-xl bg-[#7B9669] hover:bg-[#6C8480] text-white font-black text-sm transition-all shadow-lg disabled:opacity-50 flex items-center justify-center gap-2"
             >
-              {loading ? "Processing..." : otpSent ? "Verify OTP & Login" : "Send One-Time OTP Passcode"}
+              {loading
+                ? "Processing..."
+                : otpSent
+                ? subMode === "register"
+                  ? t.auth.verify_otp_reg
+                  : t.auth.verify_otp_login
+                : subMode === "register"
+                ? t.auth.send_reg_otp
+                : t.auth.send_login_otp}
             </button>
 
             {otpSent && (
               <button
                 type="button"
                 onClick={() => setOtpSent(false)}
-                className="w-full text-center text-xs text-slate-400 hover:text-slate-200 mt-2 underline"
+                className="w-full text-center text-xs text-[#BAC8B1] hover:text-white mt-2 underline"
               >
                 Change mobile number
               </button>
@@ -259,8 +504,8 @@ export default function LoginPage() {
         )}
       </main>
 
-      <footer className="text-center text-xs text-slate-600 pb-4">
-        Ministry of Consumer Affairs | Smart India Hackathon 2026
+      <footer className="text-center text-xs text-[#6C8480] font-semibold pb-4">
+        {t.footer.gov_title}
       </footer>
     </div>
   );

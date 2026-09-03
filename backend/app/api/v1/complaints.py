@@ -51,10 +51,10 @@ async def list_center_complaints(
     Center Admin Complaint Inbox: Routed exclusively to the center's admin (RLS-enforced).
     Ground staff handles physical token queue check-ins; grievance resolution is admin-only.
     """
-    if current_user.role not in [CENTER_ADMIN, SUPER_ADMIN]:
+    if current_user.role != CENTER_ADMIN:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Permission denied. Only Center Admins can view center grievance inboxes.",
+            detail="Permission denied. Only Center Admins can access center grievance inbox.",
         )
 
     verify_center_access(

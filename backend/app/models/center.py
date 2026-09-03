@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime
 from typing import Optional, List
 from sqlalchemy import String, Text, Integer, Numeric, Boolean, DateTime, func
-from sqlalchemy.dialects.postgresql import UUID
+from app.models.guid import GUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.database import Base
 
@@ -11,7 +11,7 @@ class Center(Base):
     __tablename__ = "centers"
 
     id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+        GUID(), primary_key=True, default=uuid.uuid4
     )
     name: Mapped[str] = mapped_column(String(150), nullable=False)
     code: Mapped[str] = mapped_column(String(20), unique=True, nullable=False)
@@ -31,4 +31,3 @@ class Center(Base):
     bookings: Mapped[List["Booking"]] = relationship("Booking", back_populates="center") # type: ignore
     payments: Mapped[List["Payment"]] = relationship("Payment", back_populates="center") # type: ignore
     complaints: Mapped[List["Complaint"]] = relationship("Complaint", back_populates="center") # type: ignore
-    msp_rates: Mapped[List["MSPRate"]] = relationship("MSPRate", back_populates="center") # type: ignore

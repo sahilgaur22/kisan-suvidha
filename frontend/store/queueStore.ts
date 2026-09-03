@@ -7,11 +7,14 @@ export interface BookingToken {
   farmerPhone: string;
   cropName: string;
   cropVolumeQuintals: number;
+  actualWeightQuintals?: number | null;
+  moistureContentPercent?: number | null;
+  adjustedWeightQuintals?: number | null;
   vehicleType: string;
   bookingDate: string;
   slotStartTime: string;
   slotEndTime: string;
-  status: "scheduled" | "checked_in" | "in_progress" | "completed" | "cancelled" | "no_show";
+  status: "scheduled" | "checked_in" | "in_progress" | "completed" | "cancelled" | "no_show" | "rejected";
 }
 
 interface QueueState {

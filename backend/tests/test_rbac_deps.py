@@ -1,6 +1,6 @@
 import pytest
 from fastapi import HTTPException
-from app.core.rbac import RoleChecker, verify_center_access, SUPER_ADMIN, CENTER_ADMIN, STAFF, FARMER
+from app.core.rbac import RoleChecker, verify_center_access, CENTER_ADMIN, STAFF, FARMER
 from app.core.deps import CurrentUser, get_current_user_context
 from app.core.security import create_access_token
 
@@ -18,12 +18,9 @@ def test_role_checker_allowed_roles():
 
 
 def test_verify_center_access_isolation():
-    """Verify center access checks permit super_admin and own-center access, but block cross-center access."""
+    """Verify center access checks permit own-center access, but block cross-center access."""
     center_a = "11111111-1111-1111-1111-111111111111"
     center_b = "22222222-2222-2222-2222-222222222222"
-
-    # Super Admin can access any center
-    verify_center_access(SUPER_ADMIN, user_center_id="", target_center_id=center_a)
 
     # Center Admin can access own center
     verify_center_access(CENTER_ADMIN, user_center_id=center_a, target_center_id=center_a)

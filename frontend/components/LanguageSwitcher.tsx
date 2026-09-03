@@ -1,37 +1,26 @@
 "use client";
 
-import { useState } from "react";
 import { Globe } from "lucide-react";
 import { Language } from "../lib/i18n";
+import { useUIStore } from "../store/uiStore";
 
-interface LanguageSwitcherProps {
-  currentLang?: Language;
-  onLanguageChange?: (lang: Language) => void;
-}
-
-export default function LanguageSwitcher({
-  currentLang = "en",
-  onLanguageChange,
-}: LanguageSwitcherProps) {
-  const [lang, setLang] = useState<Language>(currentLang);
+export default function LanguageSwitcher() {
+  const { language, setLanguage } = useUIStore();
 
   const toggleLanguage = (newLang: Language) => {
-    setLang(newLang);
-    if (onLanguageChange) {
-      onLanguageChange(newLang);
-    }
+    setLanguage(newLang);
   };
 
   return (
-    <div className="inline-flex items-center gap-1 bg-emerald-900/60 border border-emerald-700/50 rounded-xl p-1 text-xs">
-      <Globe className="w-3.5 h-3.5 text-emerald-400 ml-1.5" />
+    <div className="inline-flex items-center gap-1 bg-[#404E3B] border border-[#6C8480] rounded-xl p-1 text-xs shadow-md">
+      <Globe className="w-3.5 h-3.5 text-[#BAC8B1] ml-1.5" />
       <button
         type="button"
         onClick={() => toggleLanguage("en")}
         className={`px-2.5 py-1 rounded-lg font-medium transition-all ${
-          lang === "en"
-            ? "bg-emerald-500 text-slate-950 font-bold shadow"
-            : "text-emerald-200 hover:text-white"
+          language === "en"
+            ? "bg-[#7B9669] text-white font-black shadow"
+            : "text-[#BAC8B1] hover:text-white"
         }`}
       >
         English
@@ -40,12 +29,23 @@ export default function LanguageSwitcher({
         type="button"
         onClick={() => toggleLanguage("hi")}
         className={`px-2.5 py-1 rounded-lg font-medium transition-all ${
-          lang === "hi"
-            ? "bg-emerald-500 text-slate-950 font-bold shadow"
-            : "text-emerald-200 hover:text-white"
+          language === "hi"
+            ? "bg-[#7B9669] text-white font-black shadow"
+            : "text-[#BAC8B1] hover:text-white"
         }`}
       >
         हिन्दी
+      </button>
+      <button
+        type="button"
+        onClick={() => toggleLanguage("mr")}
+        className={`px-2.5 py-1 rounded-lg font-medium transition-all ${
+          language === "mr"
+            ? "bg-[#7B9669] text-white font-black shadow"
+            : "text-[#BAC8B1] hover:text-white"
+        }`}
+      >
+        मराठी
       </button>
     </div>
   );

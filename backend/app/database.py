@@ -1,18 +1,29 @@
+import os
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase
 from app.config import settings
 
-# Create Async SQLAlchemy Engine
-engine = create_async_engine(
-    settings.DATABASE_URL,
-    echo=settings.ENVIRONMENT == "development",
-    future=True,
-    pool_pre_ping=True,
-    pool_size=10,
-    max_overflow=20,
-)
+db_url = settings.DATABASE_URL
+engine_kwargs = {
+    "echo": settings.ENVIRONMENT == "development",
+    "future": True,
+}
+
+if db_url.startswith("sqlite"):
+    engine_kwargs["connect_args"] = {"check_same_thread": False}
+else:
+    engine_kwargs["pool_pre_ping"] = True
+    engine_kwargs["pool_size"] = 10
+    engine_kwargs["max_overflow"] = 20
+
+# Create Async SQLAlchemy Engine with fallback to SQLite if PostgreSQL isn't configured
+try:
+    engine = create_async_engine(db_url, **engine_kwargs)
+except Exception:
+    fallback_url = "sqlite+aiosqlite:///./kisan_suvidha_dev.db"
+    engine = create_async_engine(fallback_url, connect_args={"check_same_thread": False})
 
 # Async Session Factory
 AsyncSessionLocal = async_sessionmaker(

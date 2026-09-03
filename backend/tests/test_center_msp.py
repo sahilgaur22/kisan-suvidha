@@ -57,7 +57,8 @@ async def test_update_msp_rate_endpoint():
         id="22222222-2222-2222-2222-222222222222",
         crop_name="Wheat",
         rate_per_quintal=2400.0,
-        center_id=None,
+        permitted_moisture_percent=12.0,
+        max_rejection_moisture_percent=14.0,
         effective_from=date(2026, 9, 1),
         updated_at=datetime.now(timezone.utc),
     )

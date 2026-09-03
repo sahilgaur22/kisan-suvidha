@@ -35,6 +35,7 @@ async def test_submit_complaint_endpoint():
     mock_result = MagicMock()
     mock_result.scalar_one.return_value = 0
     mock_db.execute.return_value = mock_result
+    mock_db.refresh = AsyncMock()
 
     app.dependency_overrides[get_current_user_context] = lambda: mock_user
     app.dependency_overrides[get_db] = lambda: mock_db

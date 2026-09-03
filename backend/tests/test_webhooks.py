@@ -11,17 +11,20 @@ from app.models.farmer import Farmer
 
 
 @pytest.mark.asyncio
-async def test_sms_webhook_help_command():
-    """Verify HELP command returns instructional format prompt."""
+async def test_sms_webhook_language_selection_first():
+    """Verify fresh SMS text asks farmer for language selection (EN/HI/MR) first."""
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:
         resp = await client.post(
             f"{settings.API_V1_STR}/webhooks/sms",
-            data={"From": "+919876543210", "Body": "HELP"}
+            data={"From": "+919876543210", "Body": "START"}
         )
         assert resp.status_code == 200
         data = resp.json()
-        assert "Format: BOOK" in data["response"]
+        assert "Please select your language" in data["response"]
+        assert "1. English" in data["response"]
+        assert "2. Hindi" in data["response"]
+        assert "3. Marathi" in data["response"]
 
 
 @pytest.mark.asyncio

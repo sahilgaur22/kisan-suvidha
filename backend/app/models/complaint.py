@@ -3,7 +3,7 @@ import uuid
 from datetime import datetime
 from typing import Optional
 from sqlalchemy import String, Text, ForeignKey, DateTime, func
-from sqlalchemy.dialects.postgresql import UUID
+from app.models.guid import GUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.database import Base
 
@@ -12,6 +12,7 @@ class ComplaintStatusEnum(str, enum.Enum):
     OPEN = "open"
     IN_PROGRESS = "in_progress"
     RESOLVED = "resolved"
+    REJECTED = "rejected"
     ESCALATED = "escalated"
 
 
@@ -27,12 +28,12 @@ class Complaint(Base):
     __tablename__ = "complaints"
 
     id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+        GUID(), primary_key=True, default=uuid.uuid4
     )
     ticket_number: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
-    farmer_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("farmers.id"), nullable=False)
-    center_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("centers.id"), nullable=False)
-    booking_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("bookings.id"), nullable=True)
+    farmer_id: Mapped[uuid.UUID] = mapped_column(GUID(), ForeignKey("farmers.id"), nullable=False)
+    center_id: Mapped[uuid.UUID] = mapped_column(GUID(), ForeignKey("centers.id"), nullable=False)
+    booking_id: Mapped[Optional[uuid.UUID]] = mapped_column(GUID(), ForeignKey("bookings.id"), nullable=True)
     category: Mapped[str] = mapped_column(
         String(50), default=ComplaintCategoryEnum.OTHER.value, nullable=False
     )
@@ -41,8 +42,8 @@ class Complaint(Base):
     status: Mapped[str] = mapped_column(
         String(20), default=ComplaintStatusEnum.OPEN.value, nullable=False
     )
-    assigned_admin_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("users.id"), nullable=True)
-    resolved_by: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("users.id"), nullable=True)
+    assigned_admin_id: Mapped[Optional[uuid.UUID]] = mapped_column(GUID(), ForeignKey("users.id"), nullable=True)
+    resolved_by: Mapped[Optional[uuid.UUID]] = mapped_column(GUID(), ForeignKey("users.id"), nullable=True)
     resolution_notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False

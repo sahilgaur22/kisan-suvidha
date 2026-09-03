@@ -60,3 +60,67 @@ async def test_farmer_verify_otp_endpoint_mocked_db():
             assert data["token_type"] == "bearer"
     finally:
         app.dependency_overrides.clear()
+
+
+@pytest.mark.asyncio
+async def test_admin_login_with_admin_context():
+    """Verify center_admin user can log in with login_context='admin' or 'center_admin'."""
+    from app.models.user import User
+    from app.core.security import get_password_hash
+
+    mock_db = AsyncMock()
+    mock_user = User(
+        id="33333333-3333-3333-3333-333333333333",
+        full_name="Bhopal Mandi Admin",
+        email="admin@kisansuvidha.gov.in",
+        phone="9876543210",
+        password_hash=get_password_hash("password123"),
+        role_id=1,
+        center_id="11111111-1111-1111-1111-111111111111",
+        is_active=True,
+    )
+    mock_user_res = MagicMock()
+    mock_user_res.scalar_one_or_none.return_value = mock_user
+
+    mock_role_res = MagicMock()
+    mock_role_res.scalar_one.return_value = "center_admin"
+
+    mock_db.execute.side_effect = [mock_user_res, mock_role_res, mock_user_res, mock_role_res]
+
+    async def override_get_db():
+        yield mock_db
+
+    app.dependency_overrides[get_db] = override_get_db
+
+    try:
+        transport = ASGITransport(app=app)
+        async with AsyncClient(transport=transport, base_url="http://test") as client:
+            # Test with login_context = "admin"
+            resp = await client.post(
+                f"{settings.API_V1_STR}/auth/login",
+                json={
+                    "email": "admin@kisansuvidha.gov.in",
+                    "password": "password123",
+                    "login_context": "admin",
+                },
+            )
+            assert resp.status_code == 200
+            data = resp.json()
+            assert data["role"] == "center_admin"
+            assert "access_token" in data
+
+            # Test with login_context = "center_admin"
+            resp2 = await client.post(
+                f"{settings.API_V1_STR}/auth/login",
+                json={
+                    "email": "admin@kisansuvidha.gov.in",
+                    "password": "password123",
+                    "login_context": "center_admin",
+                },
+            )
+            assert resp2.status_code == 200
+            data2 = resp2.json()
+            assert data2["role"] == "center_admin"
+    finally:
+        app.dependency_overrides.clear()
+

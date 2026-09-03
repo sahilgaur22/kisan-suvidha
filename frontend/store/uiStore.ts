@@ -8,24 +8,26 @@ interface UIState {
   toggleSidebar: () => void;
 }
 
-const getInitialLanguage = (): Language => {
-  if (typeof window !== "undefined") {
-    const saved = localStorage.getItem("app_lang") as Language;
-    if (saved === "en" || saved === "hi") {
-      return saved;
-    }
-  }
-  return "en"; // Default fallback if not saved
-};
-
 export const useUIStore = create<UIState>((set) => ({
-  language: getInitialLanguage(),
+  language: "en",
   sidebarOpen: false,
   setLanguage: (language) => {
     if (typeof window !== "undefined") {
-      localStorage.setItem("app_lang", language);
+      try {
+        localStorage.setItem("app_lang", language);
+      } catch (e) {}
     }
     set({ language });
   },
   toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),
 }));
+
+// Sync stored language once mounted on client side
+if (typeof window !== "undefined") {
+  try {
+    const saved = localStorage.getItem("app_lang") as Language;
+    if (saved === "en" || saved === "hi" || saved === "mr") {
+      useUIStore.setState({ language: saved });
+    }
+  } catch (e) {}
+}

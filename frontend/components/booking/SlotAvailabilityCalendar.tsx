@@ -1,7 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import { Calendar as CalendarIcon, CheckCircle2 } from "lucide-react";
+import { Check } from "lucide-react";
 
 interface SlotAvailabilityCalendarProps {
   selectedDate: string;
@@ -12,59 +11,47 @@ export default function SlotAvailabilityCalendar({
   selectedDate,
   onSelectDate,
 }: SlotAvailabilityCalendarProps) {
-  // Generate next 7 available days
-  const getNext7Days = () => {
-    const days = [];
-    const today = new Date();
-    for (let i = 0; i < 7; i++) {
-      const d = new Date(today);
-      d.setDate(today.getDate() + i);
-      const isoDate = d.toISOString().split("T")[0];
-      const formattedDate = d.toLocaleDateString("en-IN", {
-        weekday: "short",
-        day: "numeric",
-        month: "short",
-      });
-      days.push({ isoDate, formattedDate });
-    }
-    return days;
-  };
-
-  const availableDays = getNext7Days();
+  // Generate next 7 days dynamically
+  const dates = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() + i);
+    return {
+      iso: d.toISOString().split("T")[0],
+      dayName: d.toLocaleDateString("en-US", { weekday: "short" }),
+      displayDate: d.toLocaleDateString("en-US", { day: "numeric", month: "short" }),
+    };
+  });
 
   return (
-    <div className="space-y-2">
-      <label className="block text-xs font-semibold text-slate-300 flex items-center gap-1.5">
-        <CalendarIcon className="w-4 h-4 text-emerald-400" />
-        Select Booking Date (Next 7 Days)
-      </label>
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-        {availableDays.map((day) => {
-          const isSelected = selectedDate === day.isoDate;
-          return (
-            <button
-              key={day.isoDate}
-              type="button"
-              onClick={() => onSelectDate(day.isoDate)}
-              className={`p-3 rounded-xl border text-left flex flex-col justify-between transition-all ${
-                isSelected
-                  ? "bg-emerald-600/30 border-emerald-500 text-white shadow-lg shadow-emerald-500/10"
-                  : "bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200"
-              }`}
-            >
-              <div className="flex items-center justify-between w-full mb-1">
-                <span className="text-xs font-bold uppercase tracking-wider">
-                  {day.formattedDate.split(",")[0]}
-                </span>
-                {isSelected && <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />}
-              </div>
-              <span className="text-sm font-semibold text-white">
-                {day.formattedDate.split(",")[1]}
+    <div className="grid grid-cols-4 sm:grid-cols-7 gap-2 my-3">
+      {dates.map((item) => {
+        const isSelected = item.iso === selectedDate;
+        return (
+          <button
+            key={item.iso}
+            type="button"
+            onClick={() => onSelectDate(item.iso)}
+            className={`p-3 rounded-2xl border text-left transition-all relative flex flex-col justify-between ${
+              isSelected
+                ? "bg-[#7B9669] border-[#7B9669] text-[#404E3B] font-bold shadow-lg"
+                : "bg-[#404E3B] border-[#6C8480]/50 text-[#E6E6E6] hover:border-[#7B9669]"
+            }`}
+          >
+            <div>
+              <span className={`text-[10px] uppercase block ${isSelected ? "text-[#404E3B]" : "text-[#BAC8B1]"}`}>
+                {item.dayName}
               </span>
-            </button>
-          );
-        })}
-      </div>
+              <span className="text-xs font-extrabold block mt-0.5">{item.displayDate}</span>
+            </div>
+
+            {isSelected && (
+              <div className="absolute top-2 right-2 w-4 h-4 rounded-full bg-[#404E3B] text-[#7B9669] flex items-center justify-center">
+                <Check className="w-3 h-3 stroke-[3]" />
+              </div>
+            )}
+          </button>
+        );
+      })}
     </div>
   );
 }

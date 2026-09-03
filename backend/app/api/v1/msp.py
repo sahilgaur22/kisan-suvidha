@@ -14,14 +14,15 @@ router = APIRouter(prefix="/msp", tags=["MSP Rate Management"])
 async def read_msp_rates(
     center_id: Optional[str] = None, db: AsyncSession = Depends(get_db)
 ):
-    """Retrieves current Minimum Support Price (MSP) rates."""
+    """Retrieves current global Minimum Support Price (MSP) rates and moisture limits."""
     rates = await get_active_msp_rates(db, center_id=center_id)
     return [
         MSPRateResponse(
             id=str(r.id),
             crop_name=r.crop_name,
             rate_per_quintal=float(r.rate_per_quintal),
-            center_id=str(r.center_id) if r.center_id else None,
+            permitted_moisture_percent=float(r.permitted_moisture_percent),
+            max_rejection_moisture_percent=float(r.max_rejection_moisture_percent),
             effective_from=r.effective_from,
             updated_at=r.updated_at,
         )
@@ -36,8 +37,8 @@ async def update_msp(
     db: AsyncSession = Depends(get_db),
 ):
     """
-    Creates or updates MSP rate for a crop.
-    Triggers real-time WebSocket broadcast and background farmer notifications.
+    Creates or updates global MSP rate for a crop.
+    Updates moisture limits and MSP rates universally for all centers.
     """
     msp = await create_or_update_msp_rate(db, payload=payload, user_id=current_user.user_id)
 
@@ -45,7 +46,8 @@ async def update_msp(
         id=str(msp.id),
         crop_name=msp.crop_name,
         rate_per_quintal=float(msp.rate_per_quintal),
-        center_id=str(msp.center_id) if msp.center_id else None,
+        permitted_moisture_percent=float(msp.permitted_moisture_percent),
+        max_rejection_moisture_percent=float(msp.max_rejection_moisture_percent),
         effective_from=msp.effective_from,
         updated_at=msp.updated_at,
     )

@@ -28,9 +28,10 @@ export function useUpdateMSPRate() {
 
   return useMutation<MSPRecord, Error, MSPUpdatePayload>({
     mutationFn: (payload: MSPUpdatePayload) =>
-      apiClient<MSPRecord>(`/msp/${encodeURIComponent(payload.crop_name)}`, {
-        method: "PUT",
+      apiClient<MSPRecord>("/msp", {
+        method: "POST",
         body: JSON.stringify({
+          crop_name: payload.crop_name,
           rate_per_quintal: payload.rate_per_quintal,
           center_id: payload.center_id,
         }),

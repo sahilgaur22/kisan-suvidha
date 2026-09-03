@@ -5,7 +5,6 @@ from app.database import Base
 
 
 class RoleEnum(str, enum.Enum):
-    SUPER_ADMIN = "super_admin"
     CENTER_ADMIN = "center_admin"
     STAFF = "staff"
     FARMER = "farmer"

@@ -7,14 +7,22 @@ module.exports = {
   theme: {
     extend: {
       colors: {
+        kisan: {
+          sage: '#7B9669',
+          light: '#E6E6E6',
+          slateTeal: '#6C8480',
+          softSage: '#BAC8B1',
+          darkForest: '#404E3B',
+        },
         emerald: {
           50: '#ecfdf5',
           100: '#d1fae5',
-          500: '#10b981',
-          600: '#059669',
-          700: '#047857',
-          800: '#065f46',
-          900: '#064e3b',
+          500: '#7B9669',
+          600: '#404E3B',
+          700: '#404E3B',
+          800: '#404E3B',
+          900: '#404E3B',
+          950: '#404E3B',
         },
       },
     },

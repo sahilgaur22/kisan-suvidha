@@ -10,7 +10,7 @@ export default function ComplaintForm() {
   const createComplaintMutation = useCreateComplaint();
 
   const [centerId, setCenterId] = useState("");
-  const [category, setCategory] = useState<"delay_in_weighing" | "msp_discrepancy" | "staff_behavior" | "payment_issue" | "general">("delay_in_weighing");
+  const [category, setCategory] = useState<"delay" | "payment_dispute" | "weighment_issue" | "behavior" | "other">("delay");
   const [subject, setSubject] = useState("");
   const [description, setDescription] = useState("");
 
@@ -24,6 +24,11 @@ export default function ComplaintForm() {
 
     if (!centerId) {
       setErrorMsg("Please select the procurement center.");
+      return;
+    }
+
+    if (description.trim().length < 10) {
+      setErrorMsg("Detailed description must be at least 10 characters long.");
       return;
     }
 
@@ -48,41 +53,41 @@ export default function ComplaintForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-slate-900 border border-slate-800 p-8 rounded-3xl shadow-2xl space-y-5 max-w-xl mx-auto my-6">
+    <form onSubmit={handleSubmit} className="bg-[#404E3B] text-white border-2 border-[#BAC8B1]/40 p-8 rounded-3xl shadow-2xl space-y-5 max-w-xl mx-auto my-6">
       <div className="flex items-center gap-3">
-        <div className="bg-amber-500/20 border border-amber-500/40 p-2.5 rounded-2xl text-amber-400">
+        <div className="bg-[#7B9669] p-2.5 rounded-2xl text-white shadow">
           <AlertCircle className="w-6 h-6" />
         </div>
         <div>
-          <h2 className="text-xl font-bold text-white">Farmer Grievance Redressal</h2>
-          <p className="text-xs text-amber-400 font-medium">Direct Ticket Dispatch to Mandi Center Admin</p>
+          <h2 className="text-xl font-black text-white">Farmer Grievance Redressal</h2>
+          <p className="text-xs text-[#BAC8B1] font-medium">Direct Ticket Dispatch to Mandi Center Admin</p>
         </div>
       </div>
 
       {successMsg && (
-        <div className="p-3.5 bg-emerald-950/80 border border-emerald-600/80 rounded-xl text-emerald-300 text-xs flex items-center gap-2">
-          <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400" />
+        <div className="p-3.5 bg-[#7B9669]/30 border border-[#7B9669] rounded-xl text-white text-xs flex items-center gap-2 font-bold">
+          <CheckCircle2 className="w-4 h-4 shrink-0 text-[#BAC8B1]" />
           {successMsg}
         </div>
       )}
 
       {errorMsg && (
-        <div className="p-3.5 bg-rose-950/60 border border-rose-800/80 rounded-xl text-rose-300 text-xs flex items-center gap-2">
-          <ShieldAlert className="w-4 h-4 shrink-0 text-rose-400" />
+        <div className="p-3.5 bg-rose-900/80 border border-rose-600 rounded-xl text-rose-100 text-xs flex items-center gap-2 font-bold">
+          <ShieldAlert className="w-4 h-4 shrink-0 text-rose-300" />
           {errorMsg}
         </div>
       )}
 
       <div>
-        <label className="block text-xs font-semibold text-slate-300 mb-1.5 flex items-center gap-1.5">
-          <Building2 className="w-4 h-4 text-emerald-400" />
+        <label className="block text-xs font-bold text-[#BAC8B1] mb-1.5 flex items-center gap-1.5">
+          <Building2 className="w-4 h-4 text-[#7B9669]" />
           Select Procurement Center
         </label>
         <select
           value={centerId}
           onChange={(e) => setCenterId(e.target.value)}
           required
-          className="w-full bg-slate-950 border border-slate-800 rounded-xl py-2.5 px-3 text-xs text-white focus:outline-none focus:border-emerald-500"
+          className="w-full bg-[#404E3B] border-2 border-[#6C8480] rounded-xl py-2.5 px-3 text-xs text-white focus:outline-none focus:border-[#7B9669]"
         >
           <option value="">-- Choose Procurement Center --</option>
           {centers?.map((c) => (
@@ -99,48 +104,49 @@ export default function ComplaintForm() {
       </div>
 
       <div>
-        <label className="block text-xs font-semibold text-slate-300 mb-1.5">Category</label>
+        <label className="block text-xs font-bold text-[#BAC8B1] mb-1.5">Category</label>
         <select
           value={category}
           onChange={(e) => setCategory(e.target.value as any)}
-          className="w-full bg-slate-950 border border-slate-800 rounded-xl py-2.5 px-3 text-xs text-white focus:outline-none focus:border-emerald-500"
+          className="w-full bg-[#404E3B] border-2 border-[#6C8480] rounded-xl py-2.5 px-3 text-xs text-white focus:outline-none focus:border-[#7B9669]"
         >
-          <option value="delay_in_weighing">Delay in Weighing / Slot Gate Entry</option>
-          <option value="msp_discrepancy">MSP Payout Discrepancy</option>
-          <option value="staff_behavior">Mandi Staff Misbehavior</option>
-          <option value="payment_issue">Bank Receipt / Payment Processing Issue</option>
-          <option value="general">General Feedback / Grievance</option>
+          <option value="delay">Delay in Weighing / Slot Gate Entry</option>
+          <option value="payment_dispute">MSP Payout / Payment Dispute</option>
+          <option value="weighment_issue">Weighment / Scale Discrepancy</option>
+          <option value="behavior">Mandi Staff Misbehavior</option>
+          <option value="other">Other General Feedback / Grievance</option>
         </select>
       </div>
 
       <div>
-        <label className="block text-xs font-semibold text-slate-300 mb-1.5">Subject</label>
+        <label className="block text-xs font-bold text-[#BAC8B1] mb-1.5">Subject</label>
         <input
           type="text"
           required
           placeholder="Brief summary of issue"
           value={subject}
           onChange={(e) => setSubject(e.target.value)}
-          className="w-full bg-slate-950 border border-slate-800 rounded-xl py-2.5 px-3 text-xs text-white focus:outline-none focus:border-emerald-500"
+          className="w-full bg-[#404E3B] border-2 border-[#6C8480] rounded-xl py-2.5 px-3 text-xs text-white focus:outline-none focus:border-[#7B9669]"
         />
       </div>
 
       <div>
-        <label className="block text-xs font-semibold text-slate-300 mb-1.5">Detailed Description</label>
+        <label className="block text-xs font-bold text-[#BAC8B1] mb-1.5">Detailed Description (Min. 10 characters)</label>
         <textarea
           rows={3}
           required
-          placeholder="Provide exact details regarding token slot, date, or staff interaction..."
+          minLength={10}
+          placeholder="Provide exact details regarding token slot, date, or staff interaction (at least 10 characters)..."
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          className="w-full bg-slate-950 border border-slate-800 rounded-xl py-2.5 px-3 text-xs text-white focus:outline-none focus:border-emerald-500"
+          className="w-full bg-[#404E3B] border-2 border-[#6C8480] rounded-xl py-2.5 px-3 text-xs text-white focus:outline-none focus:border-[#7B9669]"
         />
       </div>
 
       <button
         type="submit"
         disabled={createComplaintMutation.isPending}
-        className="w-full py-3 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-xl text-xs transition-all shadow-lg shadow-amber-500/20 disabled:opacity-50 flex items-center justify-center gap-1.5"
+        className="w-full py-3 bg-[#7B9669] hover:bg-[#6C8480] text-white font-black rounded-xl text-xs transition-all shadow-lg disabled:opacity-50 flex items-center justify-center gap-1.5"
       >
         <Send className="w-4 h-4" /> {createComplaintMutation.isPending ? "Submitting Ticket..." : "Submit Grievance Ticket"}
       </button>

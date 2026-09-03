@@ -23,23 +23,23 @@ async def create_or_update_msp_rate(
     db: AsyncSession, payload: MSPRateCreateRequest, user_id: str
 ) -> MSPRate:
     """
-    Creates or updates MSP rate for a crop, broadcasts live update via WebSockets to center,
-    and dispatches background notifications.
+    Creates or updates global MSP rate for a crop, broadcasts live updates universally,
+    and updates moisture limits.
     """
     effective_date = payload.effective_from or date.today()
-    target_center_uuid = parse_uuid_or_none(payload.center_id)
     updater_uuid = parse_uuid_or_none(user_id)
 
-    stmt = select(MSPRate).where(
-        MSPRate.crop_name == payload.crop_name,
-        MSPRate.center_id == target_center_uuid,
-        MSPRate.effective_from == effective_date,
-    )
+    stmt = select(MSPRate).where(MSPRate.crop_name == payload.crop_name)
     result = await db.execute(stmt)
     existing_msp = result.scalar_one_or_none()
 
     if existing_msp:
         existing_msp.rate_per_quintal = payload.rate_per_quintal
+        if payload.permitted_moisture_percent is not None:
+            existing_msp.permitted_moisture_percent = payload.permitted_moisture_percent
+        if payload.max_rejection_moisture_percent is not None:
+            existing_msp.max_rejection_moisture_percent = payload.max_rejection_moisture_percent
+        existing_msp.effective_from = effective_date
         existing_msp.updated_by = updater_uuid
         msp = existing_msp
     else:
@@ -47,7 +47,8 @@ async def create_or_update_msp_rate(
             id=uuid.uuid4(),
             crop_name=payload.crop_name,
             rate_per_quintal=payload.rate_per_quintal,
-            center_id=target_center_uuid,
+            permitted_moisture_percent=payload.permitted_moisture_percent or 14.0,
+            max_rejection_moisture_percent=payload.max_rejection_moisture_percent or 16.0,
             effective_from=effective_date,
             updated_by=updater_uuid,
         )
@@ -56,30 +57,13 @@ async def create_or_update_msp_rate(
     await db.commit()
     await db.refresh(msp)
 
-    # Real-time WebSocket broadcast to connected center clients
-    if payload.center_id:
-        await manager.broadcast_to_center(
-            payload.center_id,
-            {
-                "event": "msp_updated",
-                "crop_name": msp.crop_name,
-                "rate_per_quintal": float(msp.rate_per_quintal),
-                "center_id": payload.center_id,
-            },
-        )
-
     return msp
 
 
 async def get_active_msp_rates(
     db: AsyncSession, center_id: Optional[str] = None
 ) -> List[MSPRate]:
-    """Retrieves active MSP rates for global default or specified center."""
-    target_center_uuid = parse_uuid_or_none(center_id)
-
-    stmt = select(MSPRate).where(
-        (MSPRate.center_id == target_center_uuid) | (MSPRate.center_id.is_(None))
-    ).order_by(MSPRate.crop_name.asc(), MSPRate.effective_from.desc())
-
+    """Retrieves all active global MSP rates across all crops."""
+    stmt = select(MSPRate).order_by(MSPRate.crop_name.asc())
     result = await db.execute(stmt)
     return list(result.scalars().all())

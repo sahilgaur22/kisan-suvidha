@@ -1,137 +1,145 @@
 "use client";
 
-import { useState } from "react";
-import { Sprout, Truck, Scale, Building2, CheckCircle2, ShieldAlert } from "lucide-react";
-import { useProcurementCenters, useCreateBooking, BookingConfirmation } from "../../hooks/useBookings";
+import { useState, useEffect } from "react";
+import { Sprout, Scale, Truck, Calendar, Building2, CheckCircle2, ShieldAlert } from "lucide-react";
 import SlotAvailabilityCalendar from "./SlotAvailabilityCalendar";
+import { useProcurementCenters, useCreateBooking } from "../../hooks/useBookings";
 import { useUIStore } from "../../store/uiStore";
 import { getTranslation } from "../../lib/i18n";
 
 export default function SlotBookingForm() {
-  const { language } = useUIStore();
+  const language = useUIStore((state) => state.language);
   const t = getTranslation(language);
 
-  const { data: centers, isLoading: centersLoading } = useProcurementCenters();
+  const { data: centers, isLoading: loadingCenters } = useProcurementCenters();
   const createBookingMutation = useCreateBooking();
 
-  const [centerId, setCenterId] = useState("");
-  const [cropName, setCropName] = useState("Paddy (Dhan)");
-  const [cropVolume, setCropVolume] = useState("50");
-  const [vehicleType, setVehicleType] = useState<"tractor_trolley" | "small_pickup" | "heavy_truck" | "bullock_cart">("tractor_trolley");
-  const [bookingDate, setBookingDate] = useState(new Date().toISOString().split("T")[0]);
+  const getLocalDateString = () => {
+    const d = new Date();
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
 
-  const [confirmation, setConfirmation] = useState<BookingConfirmation | null>(null);
+  const [selectedCenter, setSelectedCenter] = useState("");
+  const [selectedCrop, setSelectedCrop] = useState("Paddy (Dhan)");
+  const [cropVolume, setCropVolume] = useState("50");
+  const [vehicleType, setVehicleType] = useState("tractor_trolley");
+  const [selectedDate, setSelectedDate] = useState(getLocalDateString());
+
+  const [bookingSuccess, setBookingSuccess] = useState<any | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  // Auto-select first center if available and none chosen
+  useEffect(() => {
+    if (centers && centers.length > 0 && !selectedCenter) {
+      setSelectedCenter(centers[0].id);
+    }
+  }, [centers, selectedCenter]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg(null);
 
-    if (!centerId) {
-      setErrorMsg("Please select a procurement center.");
+    if (!selectedCenter) {
+      setErrorMsg("Please select a procurement mandi center.");
       return;
     }
 
     createBookingMutation.mutate(
       {
-        center_id: centerId,
-        crop_name: cropName,
+        center_id: selectedCenter,
+        crop_name: selectedCrop,
         crop_volume_quintals: parseFloat(cropVolume),
-        vehicle_type: vehicleType,
-        booking_date: bookingDate,
-        channel: "web",
+        vehicle_type: vehicleType as any,
+        booking_date: selectedDate,
       },
       {
         onSuccess: (data) => {
-          setConfirmation(data);
+          setBookingSuccess(data);
         },
         onError: (err: any) => {
-          setErrorMsg(err.message || "Booking slot reservation failed.");
+          setErrorMsg(err.message || "Failed to reserve token. Please check slot limits.");
         },
       }
     );
   };
 
-  if (confirmation) {
+  if (bookingSuccess) {
     return (
-      <div className="bg-slate-900 border border-emerald-600/50 p-8 rounded-3xl shadow-2xl text-center space-y-6 max-w-lg mx-auto">
-        <div className="w-16 h-16 bg-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center mx-auto border border-emerald-500/40">
+      <div className="bg-[#404E3B] border-2 border-[#7B9669] p-8 rounded-3xl shadow-2xl text-center space-y-4 max-w-xl mx-auto my-6 text-white">
+        <div className="w-16 h-16 bg-[#7B9669] text-white rounded-full flex items-center justify-center mx-auto shadow-lg">
           <CheckCircle2 className="w-10 h-10" />
         </div>
+        <h2 className="text-2xl font-black text-white">{t.booking.success_title}</h2>
+        <p className="text-xs text-[#BAC8B1]">Government Procurement Gate Access Issued</p>
 
-        <div>
-          <h2 className="text-2xl font-bold text-white mb-1">{t.booking.success_title}</h2>
-          <p className="text-xs text-emerald-400">SIH Guaranteed Dynamic Slot Token</p>
-        </div>
-
-        <div className="bg-slate-950 p-6 rounded-2xl border border-slate-800 space-y-4">
-          <div>
-            <span className="text-xs text-slate-400 uppercase tracking-widest">{t.booking.token_number}</span>
-            <div className="text-4xl font-extrabold text-emerald-400 tracking-wider mt-1">
-              {confirmation.token_number}
-            </div>
+        <div className="bg-[#404E3B]/90 border border-[#BAC8B1]/40 p-6 rounded-2xl text-left space-y-3 text-xs">
+          <div className="flex justify-between border-b border-[#BAC8B1]/30 pb-2">
+            <span className="text-[#BAC8B1]">{t.booking.token_number}:</span>
+            <span className="font-mono font-bold text-[#BAC8B1] text-base">{bookingSuccess.token_number}</span>
           </div>
-
-          <div className="grid grid-cols-2 gap-4 border-t border-slate-800/80 pt-4 text-left">
-            <div>
-              <span className="text-xs text-slate-400 block">Date</span>
-              <span className="text-sm font-semibold text-white">{confirmation.booking_date}</span>
-            </div>
-            <div>
-              <span className="text-xs text-slate-400 block">{t.booking.arrival_window}</span>
-              <span className="text-sm font-semibold text-emerald-300">
-                {confirmation.slot_start_time} - {confirmation.slot_end_time}
-              </span>
-            </div>
+          <div className="flex justify-between border-b border-[#BAC8B1]/30 pb-2">
+            <span className="text-[#BAC8B1]">{t.booking.booking_date}:</span>
+            <span className="font-bold text-white">{bookingSuccess.booking_date}</span>
+          </div>
+          <div className="flex justify-between border-b border-[#BAC8B1]/30 pb-2">
+            <span className="text-[#BAC8B1]">{t.booking.arrival_window}:</span>
+            <span className="font-bold text-[#BAC8B1]">{bookingSuccess.slot_start_time} - {bookingSuccess.slot_end_time}</span>
+          </div>
+          <div className="flex justify-between border-b border-[#BAC8B1]/30 pb-2">
+            <span className="text-[#BAC8B1]">{t.booking.crop_name}:</span>
+            <span className="font-semibold text-white">{bookingSuccess.crop_name} ({bookingSuccess.crop_volume_quintals} Qtl)</span>
           </div>
         </div>
 
         <button
           type="button"
-          onClick={() => setConfirmation(null)}
-          className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-sm transition-all shadow-lg shadow-emerald-600/20"
+          onClick={() => setBookingSuccess(null)}
+          className="w-full py-3 bg-[#7B9669] hover:bg-[#6C8480] text-white font-bold rounded-xl text-xs transition-all shadow-lg"
         >
-          Book Another Token Slot
+          Book Another Token
         </button>
       </div>
     );
   }
 
   return (
-    <form onSubmit={handleSubmit} className="bg-slate-900/90 border border-slate-800 p-8 rounded-3xl shadow-2xl backdrop-blur space-y-6 max-w-xl mx-auto">
-      <div className="flex items-center gap-3 mb-2">
-        <div className="bg-emerald-500 p-2.5 rounded-2xl text-slate-950">
+    <form onSubmit={handleSubmit} className="bg-[#404E3B] text-white border-2 border-[#BAC8B1]/40 p-8 rounded-3xl shadow-2xl space-y-6 max-w-xl mx-auto my-6">
+      <div className="flex items-center gap-3">
+        <div className="bg-[#7B9669] p-2.5 rounded-2xl text-white shadow">
           <Sprout className="w-6 h-6" />
         </div>
         <div>
-          <h2 className="text-xl font-bold text-white">{t.booking.title}</h2>
-          <p className="text-xs text-emerald-400">Guaranteed MSP Token Allocation</p>
+          <h2 className="text-xl font-black text-white">{t.booking.title}</h2>
+          <p className="text-xs text-[#BAC8B1] font-medium">Guaranteed MSP Token Allocation</p>
         </div>
       </div>
 
       {errorMsg && (
-        <div className="p-3.5 bg-rose-950/60 border border-rose-800/80 rounded-xl text-rose-300 text-xs flex items-center gap-2">
-          <ShieldAlert className="w-4 h-4 shrink-0 text-rose-400" />
+        <div className="p-3.5 bg-rose-900/80 border border-rose-600 rounded-xl text-rose-100 text-xs flex items-center gap-2 font-semibold">
+          <ShieldAlert className="w-4 h-4 shrink-0 text-rose-300" />
           {errorMsg}
         </div>
       )}
 
-      {/* Center Selection */}
+      {/* 1. Mandi Selection */}
       <div>
-        <label className="block text-xs font-semibold text-slate-300 mb-1.5 flex items-center gap-1.5">
-          <Building2 className="w-4 h-4 text-emerald-400" />
+        <label className="block text-xs font-bold text-[#BAC8B1] mb-1.5 flex items-center gap-1.5">
+          <Building2 className="w-4 h-4 text-[#7B9669]" />
           {t.booking.select_center}
         </label>
         <select
-          value={centerId}
-          onChange={(e) => setCenterId(e.target.value)}
+          value={selectedCenter}
+          onChange={(e) => setSelectedCenter(e.target.value)}
           required
-          className="w-full bg-slate-950 border border-slate-800 rounded-xl py-3 px-4 text-sm text-white focus:outline-none focus:border-emerald-500 transition-all"
+          className="w-full bg-[#404E3B] border-2 border-[#6C8480] rounded-xl py-3 px-4 text-xs text-white focus:outline-none focus:border-[#7B9669]"
         >
           <option value="">-- Choose Procurement Center --</option>
           {centers?.map((c) => (
             <option key={c.id} value={c.id}>
-              {c.name} ({c.code}) — {c.district}, {c.state}
+              {c.name} ({c.code})
             </option>
           ))}
           {!centers && (
@@ -142,69 +150,79 @@ export default function SlotBookingForm() {
         </select>
       </div>
 
-      {/* Crop Name */}
+      {/* 2. Crop Selection */}
       <div>
-        <label className="block text-xs font-semibold text-slate-300 mb-1.5 flex items-center gap-1.5">
-          <Sprout className="w-4 h-4 text-emerald-400" />
+        <label className="block text-xs font-bold text-[#BAC8B1] mb-1.5 flex items-center gap-1.5">
+          <Sprout className="w-4 h-4 text-[#7B9669]" />
           {t.booking.crop_name}
         </label>
         <select
-          value={cropName}
-          onChange={(e) => setCropName(e.target.value)}
-          className="w-full bg-slate-950 border border-slate-800 rounded-xl py-3 px-4 text-sm text-white focus:outline-none focus:border-emerald-500 transition-all"
+          value={selectedCrop}
+          onChange={(e) => setSelectedCrop(e.target.value)}
+          className="w-full bg-[#404E3B] border-2 border-[#6C8480] rounded-xl py-3 px-4 text-xs text-white focus:outline-none focus:border-[#7B9669]"
         >
           <option value="Paddy (Dhan)">Paddy (Dhan)</option>
-          <option value="Wheat (Gehun)">Wheat (Gehun)</option>
+          <option value="Wheat (Gehu)">Wheat (Gehu)</option>
           <option value="Maize (Makka)">Maize (Makka)</option>
-          <option value="Mustard (Sarson)">Mustard (Sarson)</option>
+          <option value="Mustard / Rapeseed">Mustard / Rapeseed</option>
+          <option value="Soyabean / Pulses">Soyabean / Pulses</option>
         </select>
       </div>
 
-      {/* Volume & Vehicle Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      {/* 3. Crop Weight & Vehicle Type */}
+      <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-xs font-semibold text-slate-300 mb-1.5 flex items-center gap-1.5">
-            <Scale className="w-4 h-4 text-emerald-400" />
+          <label className="block text-xs font-bold text-[#BAC8B1] mb-1.5 flex items-center gap-1.5">
+            <Scale className="w-4 h-4 text-[#7B9669]" />
             {t.booking.crop_volume}
           </label>
           <input
             type="number"
             min="1"
-            max="1000"
-            required
+            max="500"
             value={cropVolume}
             onChange={(e) => setCropVolume(e.target.value)}
-            className="w-full bg-slate-950 border border-slate-800 rounded-xl py-3 px-4 text-sm text-white focus:outline-none focus:border-emerald-500 transition-all"
+            className="w-full bg-[#404E3B] border-2 border-[#6C8480] rounded-xl py-2.5 px-3 text-xs text-white focus:outline-none focus:border-[#7B9669] font-bold"
           />
         </div>
 
         <div>
-          <label className="block text-xs font-semibold text-slate-300 mb-1.5 flex items-center gap-1.5">
-            <Truck className="w-4 h-4 text-emerald-400" />
+          <label className="block text-xs font-bold text-[#BAC8B1] mb-1.5 flex items-center gap-1.5">
+            <Truck className="w-4 h-4 text-[#7B9669]" />
             {t.booking.vehicle_type}
           </label>
           <select
             value={vehicleType}
-            onChange={(e) => setVehicleType(e.target.value as any)}
-            className="w-full bg-slate-950 border border-slate-800 rounded-xl py-3 px-4 text-sm text-white focus:outline-none focus:border-emerald-500 transition-all"
+            onChange={(e) => setVehicleType(e.target.value)}
+            className="w-full bg-[#404E3B] border-2 border-[#6C8480] rounded-xl py-2.5 px-3 text-xs text-white focus:outline-none focus:border-[#7B9669] font-semibold"
           >
             <option value="tractor_trolley">Tractor Trolley</option>
-            <option value="small_pickup">Small Pickup (Bolero)</option>
-            <option value="heavy_truck">Heavy Truck (10-Tyre)</option>
-            <option value="bullock_cart">Bullock Cart</option>
+            <option value="pickup">Small Pickup / Mini Truck</option>
+            <option value="truck">Heavy Commercial Truck</option>
+            <option value="bullock_cart">Bullock Cart / Hand Cart</option>
+            <option value="other">Other Transport / Custom Vehicle</option>
           </select>
         </div>
       </div>
 
-      {/* Date Availability Calendar */}
-      <SlotAvailabilityCalendar selectedDate={bookingDate} onSelectDate={setBookingDate} />
+      {/* 4. Visual 7-Day Date Calendar */}
+      <div>
+        <label className="block text-xs font-bold text-[#BAC8B1] mb-1.5 flex items-center gap-1.5">
+          <Calendar className="w-4 h-4 text-[#7B9669]" />
+          {t.booking.booking_date}
+        </label>
+        <SlotAvailabilityCalendar
+          selectedDate={selectedDate}
+          onSelectDate={setSelectedDate}
+        />
+      </div>
 
       <button
         type="submit"
         disabled={createBookingMutation.isPending}
-        className="w-full py-3.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl text-base transition-all shadow-xl shadow-emerald-500/20 disabled:opacity-50"
+        className="w-full py-3.5 bg-[#7B9669] hover:bg-[#6C8480] text-white font-black text-sm rounded-xl transition-all shadow-xl disabled:opacity-50"
       >
-        {createBookingMutation.isPending ? "Calculating Dynamic Slot..." : t.booking.submit}
+        {createBookingMutation.isPending ? "Reserving Slot..." : t.booking.submit}
       </button>
     </form>
   );

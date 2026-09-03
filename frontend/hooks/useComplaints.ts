@@ -17,7 +17,7 @@ export interface ComplaintRecord {
 
 export interface ComplaintCreatePayload {
   center_id: string;
-  category: "delay_in_weighing" | "msp_discrepancy" | "staff_behavior" | "payment_issue" | "general";
+  category: "delay" | "payment_dispute" | "weighment_issue" | "behavior" | "other";
   subject: string;
   description: string;
   booking_id?: string;

@@ -22,6 +22,9 @@ class BookingResponse(BaseModel):
     center_id: str
     crop_name: str
     crop_volume_quintals: float
+    actual_weight_quintals: Optional[float] = None
+    moisture_content_percent: Optional[float] = None
+    adjusted_weight_quintals: Optional[float] = None
     vehicle_type: str
     booking_date: date
     slot_start_time: time
@@ -33,3 +36,9 @@ class BookingResponse(BaseModel):
 
 class BookingStatusUpdateRequest(BaseModel):
     status: BookingStatusEnum = Field(..., description="New booking status")
+    actual_weight_quintals: Optional[float] = Field(
+        None, gt=0, description="Measured weighbridge crop weight in quintals"
+    )
+    moisture_content_percent: Optional[float] = Field(
+        None, ge=0, le=100, description="Measured seed moisture content percentage %"
+    )

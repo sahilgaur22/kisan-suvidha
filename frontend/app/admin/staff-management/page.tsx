@@ -17,7 +17,7 @@ export default function AdminStaffManagementPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (
-    <ProtectedRoute allowedRoles={["center_admin", "super_admin"]}>
+    <ProtectedRoute allowedRoles={["center_admin"]}>
       <div className="min-h-screen bg-slate-950 text-slate-100 p-6 flex flex-col justify-between">
         <div>
           <header className="max-w-6xl mx-auto w-full flex items-center justify-between py-4 border-b border-slate-800/80 mb-6">

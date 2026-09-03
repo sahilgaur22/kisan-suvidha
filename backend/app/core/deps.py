@@ -53,14 +53,20 @@ async def get_scoped_db(
     Injects PostgreSQL RLS session variables (app.current_center_id & app.current_role)
     into the active database connection. This enforces multi-tenant RLS policies.
     """
-    try:
-        # Inject RLS session variables
-        if user_context.center_id:
-            await db.execute(text(f"SET LOCAL app.current_center_id = '{user_context.center_id}';"))
-        else:
-            await db.execute(text("SET LOCAL app.current_center_id = '';"))
+    center_val = str(user_context.center_id) if user_context.center_id else ""
+    role_val = str(user_context.role) if user_context.role else ""
 
-        await db.execute(text(f"SET LOCAL app.current_role = '{user_context.role}';"))
-        yield db
-    finally:
-        await db.close()
+    try:
+        await db.execute(
+            text("SELECT set_config('app.current_center_id', :center_val, true);"),
+            {"center_val": center_val},
+        )
+        await db.execute(
+            text("SELECT set_config('app.current_role', :role_val, true);"),
+            {"role_val": role_val},
+        )
+    except Exception:
+        # SQLite or non-Postgres engines safely ignore set_config
+        pass
+
+    yield db

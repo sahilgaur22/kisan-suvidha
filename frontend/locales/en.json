@@ -1,44 +1,92 @@
 {
   "app_name": "Kisan Suvidha",
-  "tagline": "Dynamic MSP Token & Queue Management",
+  "tagline": "Farmer Suvidha Portal",
+  "govt_header": {
+    "title": "Government of India • Digital India Portal",
+    "portal_name": "Kisan Suvidha Portal",
+    "login_btn": "Portal Login"
+  },
   "nav": {
     "home": "Home",
     "book_slot": "Book Slot",
     "my_bookings": "My Bookings",
-    "complaints": "Grievance Redressal",
+    "complaints": "Grievance Cell",
     "login": "Portal Login",
     "logout": "Logout",
     "language": "Language"
   },
   "landing": {
-    "hero_badge": "Dynamic AI Queue Engine & Guaranteed MSP Payouts",
-    "hero_title_1": "Eliminate Mandi Line Queues with ",
+    "hero_badge": "Ministry of Consumer Affairs, Food & Public Distribution | Government of India",
+    "hero_title_1": "Eliminate Mandi Queues with ",
     "hero_title_highlight": "Smart Token Schedules",
-    "hero_subtitle": "Seamless procurement slot booking for farmers via Web, WhatsApp, and SMS. Real-time dynamic queue recalculation and zero data leakage.",
+    "hero_subtitle": "Seamless procurement token booking for Indian farmers via Web, WhatsApp, and SMS. Dynamic arrival slot calculation, guaranteed Minimum Support Price (MSP) payouts, and zero data leakage.",
     "cta_book": "Book Procurement Slot",
-    "cta_login": "Admin & Staff Portal"
+    "cta_login": "Center Admin & Staff Portal",
+    "cta_complaint": "Grievance Cell"
+  },
+  "msp_bar": {
+    "paddy": "Paddy (Dhan) MSP",
+    "wheat": "Wheat (Gehun) MSP",
+    "weighing": "Guaranteed Weighing",
+    "weighing_sub": "Digitized Gate Scales",
+    "congestion": "Zero Gate Congestion",
+    "congestion_sub": "Smart 1-Hr Arrival Slots"
+  },
+  "services": {
+    "title": "Official Government Procurement Services",
+    "subtitle": "Multi-channel access designed for seamless Mandi operations",
+    "card1_title": "Dynamic Slot Booking",
+    "card1_desc": "Choose your preferred procurement mandi, date, crop volume, and vehicle type. Get an instant guaranteed arrival slot token.",
+    "card2_title": "WhatsApp & SMS Booking",
+    "card2_desc": "No smartphone? Send BOOK to 1800-180-1551 or WhatsApp helpline for instant token reservation.",
+    "card3_title": "Ground Staff & Admin Controls",
+    "card3_desc": "Mandi staff perform instant gate check-ins while center admins monitor live queue metrics, MSP payouts, and grievances."
+  },
+  "sms_banner": {
+    "title": "How Farmers Book via WhatsApp or SMS",
+    "subtitle": "Simply text any greeting (e.g., 'Hello' or 'Book') to receive interactive instructions, or send a direct text:",
+    "helpline_title": "Toll-Free Helpline",
+    "whatsapp_title": "WhatsApp Helpline"
   },
   "booking": {
     "title": "Book Procurement Slot",
+    "subtitle": "Guaranteed MSP Token Allocation",
     "select_center": "Select Procurement Center",
     "crop_name": "Select Crop",
     "crop_volume": "Crop Weight (Quintals)",
     "vehicle_type": "Vehicle Type",
-    "booking_date": "Preferred Date",
+    "booking_date": "Select Booking Date (Next 7 Days)",
     "submit": "Confirm & Reserve Token",
-    "success_title": "Token Booking Confirmed!",
+    "success_title": "Token Reserved Successfully!",
     "token_number": "Token Number",
-    "arrival_window": "Guaranteed Arrival Window"
+    "arrival_window": "Assigned Time Window"
   },
   "auth": {
     "login_title": "Portal Login",
-    "admin_login": "Center Admin / Super Admin Login",
-    "staff_login": "Ground Staff Login",
-    "farmer_login": "Farmer OTP Verification",
-    "phone": "Mobile Number",
-    "password": "Password",
-    "otp": "6-Digit OTP",
-    "send_otp": "Send OTP Code",
-    "verify_otp": "Verify OTP & Login"
+    "admin_tab": "Admin",
+    "staff_tab": "Staff",
+    "farmer_tab": "Farmer OTP",
+    "existing_farmer": "Existing Farmer Login",
+    "new_farmer": "New Registration",
+    "email_label": "Official Email Address",
+    "phone_label": "Farmer Mobile Number",
+    "full_name_label": "Full Name",
+    "password_label": "Password",
+    "otp_label": "Enter 6-Digit OTP Code",
+    "send_login_otp": "Send Login OTP Passcode",
+    "send_reg_otp": "Send Registration OTP",
+    "verify_otp_login": "Verify OTP & Sign In",
+    "verify_otp_reg": "Verify OTP & Complete Registration",
+    "staff_notice": "Ground staff accounts must be created and approved by the Mandi Center Admin before logging in."
+  },
+  "footer": {
+    "gov_title": "Government of India | Ministry of Consumer Affairs, Food & Public Distribution",
+    "gov_subtitle": "Department of Food and Public Distribution — MSP Procurement Portal",
+    "about_title": "Kisan Suvidha Portal",
+    "about_desc": "Centralized National Procurement Queue & Dynamic Slot Scheduling System for Farmers across State Mandis.",
+    "services_title": "Public Services",
+    "portals_title": "Government Portals",
+    "helpline_title": "Toll-Free Kisan Support",
+    "copyright": "Designed, Developed and Hosted by National Informatics Centre (NIC) | Government of India."
   }
 }

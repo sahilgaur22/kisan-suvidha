@@ -5,7 +5,7 @@ from app.database import get_db
 from app.schemas.dashboard_schema import DashboardStatsResponse
 from app.services.dashboard_service import get_center_dashboard_stats
 from app.core.deps import get_current_user_context, CurrentUser
-from app.core.rbac import verify_center_access, CENTER_ADMIN, SUPER_ADMIN
+from app.core.rbac import verify_center_access, CENTER_ADMIN
 
 router = APIRouter(prefix="/dashboard", tags=["Admin Dashboard"])
 
@@ -16,8 +16,8 @@ async def read_dashboard_statistics(
     current_user: CurrentUser = Depends(get_current_user_context),
     db: AsyncSession = Depends(get_db),
 ):
-    """Returns aggregated center dashboard statistics (Center Admin & Super Admin)."""
-    if current_user.role not in [CENTER_ADMIN, SUPER_ADMIN]:
+    """Returns aggregated center dashboard statistics (Center Admin)."""
+    if current_user.role != CENTER_ADMIN:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Permission denied. Only Center Admins can access dashboard statistics.",

@@ -15,7 +15,7 @@ def test_models_metadata_registration():
 
 def test_model_enums():
     """Verify enum choices match design specifications."""
-    assert RoleEnum.SUPER_ADMIN.value == "super_admin"
+    assert RoleEnum.CENTER_ADMIN.value == "center_admin"
     assert VehicleTypeEnum.TRACTOR_TROLLEY.value == "tractor_trolley"
     assert BookingStatusEnum.SCHEDULED.value == "scheduled"
     assert BookingChannelEnum.WEB.value == "web"

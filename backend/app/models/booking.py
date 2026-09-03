@@ -3,7 +3,7 @@ import uuid
 from datetime import datetime, date, time
 from typing import Optional
 from sqlalchemy import String, Numeric, ForeignKey, Date, Time, DateTime, func, Index, CheckConstraint
-from sqlalchemy.dialects.postgresql import UUID
+from app.models.guid import GUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.database import Base
 
@@ -23,28 +23,32 @@ class BookingStatusEnum(str, enum.Enum):
     COMPLETED = "completed"
     CANCELLED = "cancelled"
     NO_SHOW = "no_show"
+    REJECTED = "rejected"
 
 
 class BookingChannelEnum(str, enum.Enum):
     WEB = "web"
     WHATSAPP = "whatsapp"
     SMS = "sms"
-    STAFF_MANUAL = "staff_manual"
+    IVR = "ivr"
 
 
 class Booking(Base):
     __tablename__ = "bookings"
 
     id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+        GUID(), primary_key=True, default=uuid.uuid4
     )
     token_number: Mapped[str] = mapped_column(String(20), nullable=False)
-    farmer_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("farmers.id"), nullable=False)
-    center_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("centers.id"), nullable=False)
+    farmer_id: Mapped[uuid.UUID] = mapped_column(GUID(), ForeignKey("farmers.id"), nullable=False)
+    center_id: Mapped[uuid.UUID] = mapped_column(GUID(), ForeignKey("centers.id"), nullable=False)
     crop_name: Mapped[str] = mapped_column(String(100), nullable=False)
     crop_volume_quintals: Mapped[float] = mapped_column(
         Numeric(8, 2), CheckConstraint("crop_volume_quintals > 0"), nullable=False
     )
+    actual_weight_quintals: Mapped[Optional[float]] = mapped_column(Numeric(8, 2), nullable=True)
+    moisture_content_percent: Mapped[Optional[float]] = mapped_column(Numeric(5, 2), nullable=True)
+    adjusted_weight_quintals: Mapped[Optional[float]] = mapped_column(Numeric(8, 2), nullable=True)
     vehicle_type: Mapped[str] = mapped_column(String(30), nullable=False)
     booking_date: Mapped[date] = mapped_column(Date, nullable=False)
     slot_start_time: Mapped[time] = mapped_column(Time, nullable=False)

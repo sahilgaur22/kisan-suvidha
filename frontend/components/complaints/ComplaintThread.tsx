@@ -12,17 +12,26 @@ interface ComplaintThreadProps {
 export default function ComplaintThread({ complaint, isAdmin = false }: ComplaintThreadProps) {
   const resolveMutation = useResolveComplaint();
   const [notes, setNotes] = useState("");
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const handleResolve = (status: "resolved" | "rejected") => {
-    if (!notes.trim()) {
-      alert("Please enter resolution notes before updating ticket.");
+    setErrorMsg(null);
+    if (!notes.trim() || notes.trim().length < 5) {
+      setErrorMsg("Please enter at least 5 characters for resolution notes before updating ticket.");
       return;
     }
-    resolveMutation.mutate({
-      complaintId: complaint.id,
-      status,
-      resolution_notes: notes,
-    });
+    resolveMutation.mutate(
+      {
+        complaintId: complaint.id,
+        status,
+        resolution_notes: notes.trim(),
+      },
+      {
+        onError: (err: any) => {
+          setErrorMsg(err.message || "Failed to update complaint resolution status.");
+        },
+      }
+    );
   };
 
   const getStatusBadge = () => {
@@ -64,6 +73,12 @@ export default function ComplaintThread({ complaint, isAdmin = false }: Complain
         </p>
       </div>
 
+      {errorMsg && (
+        <div className="p-2.5 bg-rose-950/80 border border-rose-600/60 rounded-xl text-xs text-rose-200 font-semibold">
+          {errorMsg}
+        </div>
+      )}
+
       {complaint.resolution_notes && (
         <div className="p-3 bg-emerald-950/40 border border-emerald-800/50 rounded-xl text-xs text-emerald-300">
           <span className="font-bold text-emerald-400 block mb-1">Admin Resolution Note:</span>
@@ -75,7 +90,7 @@ export default function ComplaintThread({ complaint, isAdmin = false }: Complain
         <div className="pt-2 space-y-2 border-t border-slate-800">
           <textarea
             rows={2}
-            placeholder="Type official resolution notes for farmer..."
+            placeholder="Type official resolution notes for farmer (min 5 characters)..."
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-emerald-500"
@@ -87,7 +102,7 @@ export default function ComplaintThread({ complaint, isAdmin = false }: Complain
               disabled={resolveMutation.isPending}
               className="px-3 py-1.5 bg-rose-950 border border-rose-800 text-rose-300 rounded-lg text-xs font-semibold hover:bg-rose-900"
             >
-              Reject Ticket
+              {resolveMutation.isPending ? "Updating..." : "Reject Ticket"}
             </button>
             <button
               type="button"
@@ -95,7 +110,7 @@ export default function ComplaintThread({ complaint, isAdmin = false }: Complain
               disabled={resolveMutation.isPending}
               className="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 rounded-lg text-xs font-bold shadow-md shadow-emerald-500/20"
             >
-              Resolve Ticket
+              {resolveMutation.isPending ? "Updating..." : "Resolve Ticket"}
             </button>
           </div>
         </div>

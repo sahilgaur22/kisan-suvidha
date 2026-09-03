@@ -1,4 +1,4 @@
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "../lib/api-client";
 
 export interface ProcurementCenter {
@@ -28,6 +28,22 @@ export interface BookingConfirmation {
   status: string;
 }
 
+export interface FarmerBookingRecord {
+  id: string;
+  token_number: string;
+  farmer_id: string;
+  center_id: string;
+  crop_name: string;
+  crop_volume_quintals: number;
+  vehicle_type: string;
+  booking_date: string;
+  slot_start_time: string;
+  slot_end_time: string;
+  status: string;
+  channel: string;
+  created_at: string;
+}
+
 export function useProcurementCenters() {
   return useQuery<ProcurementCenter[]>({
     queryKey: ["procurement-centers"],
@@ -35,12 +51,23 @@ export function useProcurementCenters() {
   });
 }
 
+export function useMyBookings() {
+  return useQuery<FarmerBookingRecord[]>({
+    queryKey: ["my-bookings"],
+    queryFn: () => apiClient<FarmerBookingRecord[]>("/bookings/my"),
+  });
+}
+
 export function useCreateBooking() {
+  const queryClient = useQueryClient();
   return useMutation<BookingConfirmation, Error, BookingPayload>({
     mutationFn: (payload: BookingPayload) =>
       apiClient<BookingConfirmation>("/bookings", {
         method: "POST",
         body: JSON.stringify(payload),
       }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["my-bookings"] });
+    },
   });
 }

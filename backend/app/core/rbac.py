@@ -2,7 +2,7 @@ from typing import List
 from fastapi import HTTPException, status
 from app.models.role import RoleEnum
 
-SUPER_ADMIN = RoleEnum.SUPER_ADMIN.value
+SUPER_ADMIN = "super_admin"
 CENTER_ADMIN = RoleEnum.CENTER_ADMIN.value
 STAFF = RoleEnum.STAFF.value
 FARMER = RoleEnum.FARMER.value
@@ -31,11 +31,8 @@ def require_roles(*roles: str):
 def verify_center_access(user_role: str, user_center_id: str, target_center_id: str) -> None:
     """
     Enforces center scoping for multi-tenant isolation.
-    Super Admins can access any center. Center Admins and Staff can strictly only access target_center_id.
+    Center Admins and Ground Staff can strictly only access their assigned center resource.
     """
-    if user_role == SUPER_ADMIN:
-        return
-
     if str(user_center_id) != str(target_center_id):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,

@@ -13,6 +13,7 @@ export default function MSPEditor({ centerId }: MSPEditorProps) {
   const updateMspMutation = useUpdateMSPRate();
 
   const [selectedCrop, setSelectedCrop] = useState("Paddy (Dhan)");
+  const [customCrop, setCustomCrop] = useState("");
   const [newRate, setNewRate] = useState("2300");
 
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
@@ -23,15 +24,24 @@ export default function MSPEditor({ centerId }: MSPEditorProps) {
     setSuccessMsg(null);
     setErrorMsg(null);
 
+    const targetCrop = selectedCrop === "OTHER_CUSTOM" ? customCrop.trim() : selectedCrop;
+    if (!targetCrop) {
+      setErrorMsg("Please enter a valid crop name.");
+      return;
+    }
+
     updateMspMutation.mutate(
       {
-        crop_name: selectedCrop,
+        crop_name: targetCrop,
         rate_per_quintal: parseFloat(newRate),
         center_id: centerId,
       },
       {
         onSuccess: () => {
-          setSuccessMsg(`MSP Rate for ${selectedCrop} updated to ₹${newRate}/Qtl! Broadcast sent to live dashboards.`);
+          setSuccessMsg(`Global MSP Rate for ${targetCrop} updated to ₹${newRate}/Qtl for ALL Mandi Centers!`);
+          if (selectedCrop === "OTHER_CUSTOM") {
+            setCustomCrop("");
+          }
         },
         onError: (err: any) => {
           setErrorMsg(err.message || "Failed to update MSP rate.");
@@ -47,8 +57,8 @@ export default function MSPEditor({ centerId }: MSPEditorProps) {
           <Sprout className="w-6 h-6" />
         </div>
         <div>
-          <h2 className="text-xl font-bold text-white">Live MSP Rate Management</h2>
-          <p className="text-xs text-emerald-400">Updates trigger WebSocket broadcasts to farmers & dashboards</p>
+          <h2 className="text-xl font-bold text-white">Global Crop MSP Rate & Moisture Control</h2>
+          <p className="text-xs text-emerald-400">Updating MSP here applies universally across ALL Government Mandi Procurement Centers</p>
         </div>
       </div>
 
@@ -68,15 +78,21 @@ export default function MSPEditor({ centerId }: MSPEditorProps) {
 
       {/* Existing Rates Display */}
       <div className="bg-slate-950 border border-slate-800 p-4 rounded-2xl space-y-2">
-        <span className="text-xs text-slate-400 font-semibold uppercase tracking-wider block">Current MSP Table</span>
+        <span className="text-xs text-slate-400 font-semibold uppercase tracking-wider block">Global Crop MSP & Moisture Table</span>
         {isLoading ? (
-          <p className="text-xs text-slate-500">Loading live MSP table...</p>
+          <p className="text-xs text-slate-500">Loading global MSP table...</p>
         ) : (
-          <div className="grid grid-cols-2 gap-3 pt-1">
-            {mspRates?.map((r) => (
-              <div key={r.id} className="p-2.5 bg-slate-900 rounded-xl border border-slate-800 flex items-center justify-between">
-                <span className="text-xs font-semibold text-white">{r.crop_name}</span>
-                <span className="text-xs font-bold text-emerald-400">₹{r.rate_per_quintal}/Qtl</span>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+            {mspRates?.map((r: any) => (
+              <div key={r.id} className="p-3 bg-slate-900 rounded-xl border border-slate-800 space-y-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-white">{r.crop_name}</span>
+                  <span className="text-xs font-black text-emerald-400">₹{r.rate_per_quintal}/Qtl</span>
+                </div>
+                <div className="flex items-center justify-between text-[10px] text-slate-400">
+                  <span>FAQ Permitted: <strong className="text-slate-200">{r.permitted_moisture_percent}%</strong></span>
+                  <span>Max Rejection: <strong className="text-rose-300">{r.max_rejection_moisture_percent}%</strong></span>
+                </div>
               </div>
             ))}
           </div>
@@ -89,14 +105,30 @@ export default function MSPEditor({ centerId }: MSPEditorProps) {
           <select
             value={selectedCrop}
             onChange={(e) => setSelectedCrop(e.target.value)}
-            className="w-full bg-slate-950 border border-slate-800 rounded-xl py-3 px-4 text-sm text-white focus:outline-none focus:border-emerald-500"
+            className="w-full bg-slate-950 border border-slate-800 rounded-xl py-3 px-4 text-sm text-white focus:outline-none focus:border-emerald-500 font-bold"
           >
-            <option value="Paddy (Dhan)">Paddy (Dhan)</option>
-            <option value="Wheat (Gehun)">Wheat (Gehun)</option>
-            <option value="Maize (Makka)">Maize (Makka)</option>
-            <option value="Mustard (Sarson)">Mustard (Sarson)</option>
+            <option value="Paddy (Dhan)">Paddy (Dhan) — FAQ: 17%, Max: 19%</option>
+            <option value="Wheat (Gehu)">Wheat (Gehu) — FAQ: 12%, Max: 14%</option>
+            <option value="Maize (Makka)">Maize (Makka) — FAQ: 14%, Max: 16%</option>
+            <option value="Mustard / Rapeseed">Mustard / Rapeseed — FAQ: 8%, Max: 10%</option>
+            <option value="Soyabean / Pulses">Soyabean / Pulses — FAQ: 12%, Max: 14%</option>
+            <option value="OTHER_CUSTOM">+ Add Custom Crop</option>
           </select>
         </div>
+
+        {selectedCrop === "OTHER_CUSTOM" && (
+          <div>
+            <label className="block text-xs font-semibold text-emerald-400 mb-1.5">Enter New Crop Name</label>
+            <input
+              type="text"
+              required
+              placeholder="e.g. Sugarcane, Chana, Turmeric"
+              value={customCrop}
+              onChange={(e) => setCustomCrop(e.target.value)}
+              className="w-full bg-slate-950 border border-emerald-600 rounded-xl py-3 px-4 text-sm text-white focus:outline-none focus:border-emerald-400 font-bold"
+            />
+          </div>
+        )}
 
         <div>
           <label className="block text-xs font-semibold text-slate-300 mb-1.5">New MSP Rate (₹ per Quintal)</label>
