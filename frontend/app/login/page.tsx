@@ -141,11 +141,21 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
+      const isReg = subMode === "register";
       await apiClient("/auth/farmer/otp/send", {
         method: "POST",
-        body: JSON.stringify({ phone, full_name: fullName || undefined }),
+        body: JSON.stringify({
+          phone: phone.trim(),
+          full_name: isReg ? fullName.trim() : undefined,
+          is_registration: isReg,
+        }),
       });
       setOtpSent(true);
+      if (isReg) {
+        setSuccessMsg("Registration OTP sent! Enter the code below to complete registration.");
+      } else {
+        setSuccessMsg("Login OTP sent to your registered mobile number.");
+      }
     } catch (err: any) {
       setErrorMsg(err.message || "Failed to send OTP code.");
     } finally {
@@ -160,6 +170,7 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
+      const isReg = subMode === "register";
       const data = await apiClient<{
         access_token: string;
         farmer_id: string;
@@ -167,7 +178,12 @@ export default function LoginPage() {
         phone: string;
       }>("/auth/farmer/otp/verify", {
         method: "POST",
-        body: JSON.stringify({ phone, otp, full_name: fullName || undefined }),
+        body: JSON.stringify({
+          phone: phone.trim(),
+          otp: otp.trim(),
+          full_name: isReg ? fullName.trim() : undefined,
+          is_registration: isReg,
+        }),
       });
 
       setAuth(
@@ -190,25 +206,25 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] flex flex-col justify-between text-slate-900 p-6">
+    <div className="min-h-screen bg-slate-50 flex flex-col justify-between text-slate-900 p-6">
       <header className="max-w-md mx-auto w-full pt-4 flex items-center justify-between">
         <Link
           href="/"
-          className="inline-flex items-center gap-2 text-xs font-bold text-[#404E3B] hover:text-[#7B9669] transition-all bg-white px-3 py-1.5 rounded-xl border border-[#BAC8B1] shadow-sm"
+          className="inline-flex items-center gap-2 text-xs font-bold text-kisan-800 hover:text-kisan-700 transition-all bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-sm"
         >
           <ArrowLeft className="w-4 h-4" /> {t.nav.home}
         </Link>
         <LanguageSwitcher />
       </header>
 
-      <main className="max-w-md mx-auto w-full bg-[#404E3B] border-2 border-[#BAC8B1]/50 p-8 rounded-3xl shadow-2xl text-white my-8">
+      <main className="max-w-md mx-auto w-full bg-gradient-to-br from-kisan-900 via-kisan-800 to-kisan-950 border-2 border-kisan-700/40 p-8 rounded-3xl shadow-2xl text-white my-8">
         <div className="flex items-center justify-center gap-3 mb-6">
-          <div className="bg-[#7B9669] p-2.5 rounded-2xl text-white shadow">
+          <div className="bg-gradient-to-tr from-amber-400 to-kisan-400 p-2.5 rounded-2xl text-kisan-950 shadow">
             <Sprout className="w-7 h-7" />
           </div>
           <div>
             <h1 className="text-2xl font-black text-white">{t.app_name}</h1>
-            <p className="text-xs text-[#BAC8B1] font-semibold">
+            <p className="text-xs text-kisan-200 font-semibold">
               {activeTab === "farmer"
                 ? subMode === "login"
                   ? t.auth.existing_farmer
@@ -233,7 +249,7 @@ export default function LoginPage() {
         />
 
         {/* Sub-Toggle for Login vs Registration across all roles */}
-        <div className="grid grid-cols-2 gap-2 p-1 bg-[#404E3B] border border-[#6C8480] rounded-xl mb-6 text-xs font-bold">
+        <div className="grid grid-cols-2 gap-2 p-1 bg-kisan-950/80 border border-kisan-700/60 rounded-xl mb-6 text-xs font-bold">
           <button
             type="button"
             onClick={() => {
@@ -242,8 +258,8 @@ export default function LoginPage() {
             }}
             className={`py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 ${
               subMode === "login"
-                ? "bg-[#7B9669] text-white shadow"
-                : "text-[#BAC8B1] hover:text-white"
+                ? "bg-kisan-700 text-white shadow"
+                : "text-kisan-200 hover:text-white"
             }`}
           >
             <LogIn className="w-3.5 h-3.5" /> Existing {activeTab === "farmer" ? "Farmer" : activeTab === "admin" ? "Admin" : "Staff"} Login
@@ -257,8 +273,8 @@ export default function LoginPage() {
             }}
             className={`py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 ${
               subMode === "register"
-                ? "bg-[#7B9669] text-white shadow"
-                : "text-[#BAC8B1] hover:text-white"
+                ? "bg-kisan-700 text-white shadow"
+                : "text-kisan-200 hover:text-white"
             }`}
           >
             <UserPlus className="w-3.5 h-3.5" /> New {activeTab === "farmer" ? "Farmer" : activeTab === "admin" ? "Admin" : "Staff"} Registration
@@ -267,17 +283,17 @@ export default function LoginPage() {
 
         {/* Staff Admin Approval Info Notice */}
         {activeTab === "staff" && (
-          <div className="p-3 mb-4 bg-[#7B9669]/20 border border-[#7B9669]/50 rounded-xl text-[11px] text-[#BAC8B1] space-y-1">
+          <div className="p-3 mb-4 bg-amber-500/10 border border-amber-400/40 rounded-xl text-[11px] text-amber-200 space-y-1">
             <div className="flex items-center gap-1.5 text-white font-bold">
-              <ShieldCheck className="w-3.5 h-3.5 text-[#7B9669]" /> Ground Staff Approval Notice
+              <ShieldCheck className="w-3.5 h-3.5 text-amber-400" /> Ground Staff Approval Notice
             </div>
             <p>{t.auth.staff_notice}</p>
           </div>
         )}
 
         {successMsg && (
-          <div className="mb-6 p-3.5 bg-[#7B9669]/30 border border-[#7B9669] rounded-xl text-white text-xs flex items-center gap-2 font-semibold">
-            <CheckCircle2 className="w-4 h-4 shrink-0 text-[#7B9669]" />
+          <div className="mb-6 p-3.5 bg-kisan-700/40 border border-kisan-400 rounded-xl text-white text-xs flex items-center gap-2 font-semibold">
+            <CheckCircle2 className="w-4 h-4 shrink-0 text-kisan-300" />
             {successMsg}
           </div>
         )}
@@ -293,11 +309,11 @@ export default function LoginPage() {
           <form onSubmit={handleAdminStaffSubmit} className="space-y-4">
             {subMode === "register" && (
               <div>
-                <label htmlFor="fullName" className="block text-xs font-bold text-[#BAC8B1] mb-1.5">
+                <label htmlFor="fullName" className="block text-xs font-bold text-kisan-200 mb-1.5">
                   Full Name <span className="text-rose-300">*</span>
                 </label>
                 <div className="relative">
-                  <User className="w-4 h-4 text-[#BAC8B1] absolute left-3.5 top-3.5" />
+                  <User className="w-4 h-4 text-kisan-300 absolute left-3.5 top-3.5" />
                   <input
                     id="fullName"
                     name="fullName"
@@ -306,18 +322,18 @@ export default function LoginPage() {
                     placeholder="Enter full name"
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
-                    className="w-full bg-[#404E3B] border-2 border-[#6C8480] rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:border-[#7B9669] transition-all font-bold"
+                    className="w-full bg-kisan-950/90 border-2 border-kisan-700/60 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:border-kisan-400 transition-all font-bold placeholder:text-kisan-300/40"
                   />
                 </div>
               </div>
             )}
 
             <div>
-              <label htmlFor="email" className="block text-xs font-bold text-[#BAC8B1] mb-1.5">
+              <label htmlFor="email" className="block text-xs font-bold text-kisan-200 mb-1.5">
                 {t.auth.email_label} <span className="text-rose-300">*</span>
               </label>
               <div className="relative">
-                <Mail className="w-4 h-4 text-[#BAC8B1] absolute left-3.5 top-3.5" />
+                <Mail className="w-4 h-4 text-kisan-300 absolute left-3.5 top-3.5" />
                 <input
                   id="email"
                   name="email"
@@ -330,7 +346,7 @@ export default function LoginPage() {
                   }
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full bg-[#404E3B] border-2 border-[#6C8480] rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:border-[#7B9669] transition-all font-semibold"
+                  className="w-full bg-kisan-950/90 border-2 border-kisan-700/60 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:border-kisan-400 transition-all font-semibold placeholder:text-kisan-300/40"
                 />
               </div>
             </div>
@@ -338,8 +354,8 @@ export default function LoginPage() {
             {subMode === "register" && (
               <>
                 <div>
-                  <label htmlFor="centerId" className="block text-xs font-bold text-[#BAC8B1] mb-1.5 flex items-center gap-1.5">
-                    <Building2 className="w-3.5 h-3.5 text-[#7B9669]" /> Assigned Procurement Mandi Center <span className="text-rose-300">*</span>
+                  <label htmlFor="centerId" className="block text-xs font-bold text-kisan-200 mb-1.5 flex items-center gap-1.5">
+                    <Building2 className="w-3.5 h-3.5 text-amber-400" /> Assigned Procurement Mandi Center <span className="text-rose-300">*</span>
                   </label>
                   <select
                     id="centerId"
@@ -347,7 +363,7 @@ export default function LoginPage() {
                     required
                     value={selectedCenterId}
                     onChange={(e) => setSelectedCenterId(e.target.value)}
-                    className="w-full bg-[#404E3B] border-2 border-[#6C8480] rounded-xl py-2.5 px-3 text-xs text-white focus:outline-none focus:border-[#7B9669] transition-all font-bold"
+                    className="w-full bg-kisan-950/90 border-2 border-kisan-700/60 rounded-xl py-2.5 px-3 text-xs text-white focus:outline-none focus:border-kisan-400 transition-all font-bold"
                   >
                     <option value="">-- Choose Assigned Procurement Center --</option>
                     {centers?.map((c) => (
@@ -359,11 +375,11 @@ export default function LoginPage() {
                 </div>
 
                 <div>
-                  <label htmlFor="phone" className="block text-xs font-bold text-[#BAC8B1] mb-1.5">
+                  <label htmlFor="phone" className="block text-xs font-bold text-kisan-200 mb-1.5">
                     Mobile Phone Number <span className="text-rose-300">*</span>
                   </label>
                   <div className="relative">
-                    <Phone className="w-4 h-4 text-[#BAC8B1] absolute left-3.5 top-3.5" />
+                    <Phone className="w-4 h-4 text-kisan-300 absolute left-3.5 top-3.5" />
                     <input
                       id="phone"
                       name="phone"
@@ -372,7 +388,7 @@ export default function LoginPage() {
                       placeholder="10-digit mobile number"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
-                      className="w-full bg-[#404E3B] border-2 border-[#6C8480] rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:border-[#7B9669] transition-all font-semibold"
+                      className="w-full bg-kisan-950/90 border-2 border-kisan-700/60 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:border-kisan-400 transition-all font-semibold placeholder:text-kisan-300/40"
                     />
                   </div>
                 </div>
@@ -380,11 +396,11 @@ export default function LoginPage() {
             )}
 
             <div>
-              <label htmlFor="password" className="block text-xs font-bold text-[#BAC8B1] mb-1.5">
+              <label htmlFor="password" className="block text-xs font-bold text-kisan-200 mb-1.5">
                 {t.auth.password_label} <span className="text-rose-300">*</span>
               </label>
               <div className="relative">
-                <Lock className="w-4 h-4 text-[#BAC8B1] absolute left-3.5 top-3.5" />
+                <Lock className="w-4 h-4 text-kisan-300 absolute left-3.5 top-3.5" />
                 <input
                   id="password"
                   name="password"
@@ -393,7 +409,7 @@ export default function LoginPage() {
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full bg-[#404E3B] border-2 border-[#6C8480] rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:border-[#7B9669] transition-all"
+                  className="w-full bg-kisan-950/90 border-2 border-kisan-700/60 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:border-kisan-400 transition-all"
                 />
               </div>
             </div>
@@ -401,7 +417,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full mt-2 py-3.5 rounded-xl bg-[#7B9669] hover:bg-[#6C8480] text-white font-black text-sm transition-all shadow-lg disabled:opacity-50"
+              className="w-full mt-2 py-3.5 rounded-xl bg-kisan-700 hover:bg-kisan-600 text-white font-black text-sm transition-all shadow-lg disabled:opacity-50"
             >
               {loading
                 ? "Processing..."
@@ -414,11 +430,11 @@ export default function LoginPage() {
           <form onSubmit={otpSent ? handleVerifyOtp : handleRequestOtp} className="space-y-4">
             {subMode === "register" && !otpSent && (
               <div>
-                <label htmlFor="farmerFullName" className="block text-xs font-bold text-[#BAC8B1] mb-1.5">
+                <label htmlFor="farmerFullName" className="block text-xs font-bold text-kisan-200 mb-1.5">
                   {t.auth.full_name_label} <span className="text-rose-300">*</span>
                 </label>
                 <div className="relative">
-                  <User className="w-4 h-4 text-[#BAC8B1] absolute left-3.5 top-3.5" />
+                  <User className="w-4 h-4 text-kisan-300 absolute left-3.5 top-3.5" />
                   <input
                     id="farmerFullName"
                     name="farmerFullName"
@@ -427,18 +443,18 @@ export default function LoginPage() {
                     placeholder="Enter your full name"
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
-                    className="w-full bg-[#404E3B] border-2 border-[#6C8480] rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:border-[#7B9669] transition-all font-bold"
+                    className="w-full bg-kisan-950/90 border-2 border-kisan-700/60 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:border-kisan-400 transition-all font-bold placeholder:text-kisan-300/40"
                   />
                 </div>
               </div>
             )}
 
             <div>
-              <label htmlFor="farmerPhone" className="block text-xs font-bold text-[#BAC8B1] mb-1.5">
+              <label htmlFor="farmerPhone" className="block text-xs font-bold text-kisan-200 mb-1.5">
                 {t.auth.phone_label} <span className="text-rose-300">*</span>
               </label>
               <div className="relative">
-                <Phone className="w-4 h-4 text-[#BAC8B1] absolute left-3.5 top-3.5" />
+                <Phone className="w-4 h-4 text-kisan-300 absolute left-3.5 top-3.5" />
                 <input
                   id="farmerPhone"
                   name="farmerPhone"
@@ -448,18 +464,18 @@ export default function LoginPage() {
                   placeholder="10-digit mobile number"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  className="w-full bg-[#404E3B] border-2 border-[#6C8480] rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:border-[#7B9669] transition-all disabled:opacity-60 font-bold"
+                  className="w-full bg-kisan-950/90 border-2 border-kisan-700/60 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:border-kisan-400 transition-all disabled:opacity-60 font-bold placeholder:text-kisan-300/40"
                 />
               </div>
             </div>
 
             {otpSent && (
               <div>
-                <label htmlFor="otp" className="block text-xs font-bold text-[#BAC8B1] mb-1.5">
+                <label htmlFor="otp" className="block text-xs font-bold text-kisan-200 mb-1.5">
                   {t.auth.otp_label}
                 </label>
                 <div className="relative">
-                  <Lock className="w-4 h-4 text-[#BAC8B1] absolute left-3.5 top-3.5" />
+                  <Lock className="w-4 h-4 text-kisan-300 absolute left-3.5 top-3.5" />
                   <input
                     id="otp"
                     name="otp"
@@ -469,7 +485,7 @@ export default function LoginPage() {
                     placeholder="123456"
                     value={otp}
                     onChange={(e) => setOtp(e.target.value)}
-                    className="w-full bg-[#404E3B] border-2 border-[#6C8480] rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:border-[#7B9669] transition-all tracking-widest text-center font-bold"
+                    className="w-full bg-kisan-950/90 border-2 border-kisan-700/60 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:border-kisan-400 transition-all tracking-widest text-center font-bold"
                   />
                 </div>
               </div>
@@ -478,7 +494,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full mt-2 py-3.5 rounded-xl bg-[#7B9669] hover:bg-[#6C8480] text-white font-black text-sm transition-all shadow-lg disabled:opacity-50 flex items-center justify-center gap-2"
+              className="w-full mt-2 py-3.5 rounded-xl bg-kisan-700 hover:bg-kisan-600 text-white font-black text-sm transition-all shadow-lg disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {loading
                 ? "Processing..."
@@ -495,7 +511,7 @@ export default function LoginPage() {
               <button
                 type="button"
                 onClick={() => setOtpSent(false)}
-                className="w-full text-center text-xs text-[#BAC8B1] hover:text-white mt-2 underline"
+                className="w-full text-center text-xs text-kisan-200 hover:text-white mt-2 underline"
               >
                 Change mobile number
               </button>
@@ -504,7 +520,7 @@ export default function LoginPage() {
         )}
       </main>
 
-      <footer className="text-center text-xs text-[#6C8480] font-semibold pb-4">
+      <footer className="text-center text-xs text-slate-500 font-semibold pb-4">
         {t.footer.gov_title}
       </footer>
     </div>

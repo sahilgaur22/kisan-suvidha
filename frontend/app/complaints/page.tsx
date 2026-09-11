@@ -19,35 +19,42 @@ export default function FarmerComplaintsPage() {
 
   return (
     <ProtectedRoute allowedRoles={["farmer", "staff", "center_admin"]}>
-      <div className="min-h-screen bg-[#F8FAFC] text-slate-900 p-6 flex flex-col justify-between">
+      <div className="min-h-screen bg-slate-50 text-slate-900 p-6 flex flex-col justify-between">
         <div>
-          <header className="max-w-4xl mx-auto w-full flex items-center justify-between py-4 border-b-2 border-[#BAC8B1] mb-6">
+          <header className="max-w-4xl mx-auto w-full flex items-center justify-between py-4 border-b border-slate-200 mb-6">
             <div className="flex items-center gap-3">
               <Link
                 href="/"
-                className="p-2 rounded-xl bg-white border-2 border-[#BAC8B1] hover:border-[#7B9669] text-[#404E3B] transition-all shadow-sm"
+                className="p-2 rounded-xl bg-white border border-slate-200 hover:border-kisan-600 text-kisan-800 transition-all shadow-sm"
               >
                 <ArrowLeft className="w-5 h-5" />
               </Link>
               <div className="flex items-center gap-2">
-                <div className="bg-[#7B9669] p-2 rounded-xl text-white shadow">
+                <div className="bg-gradient-to-tr from-amber-400 to-kisan-400 p-2 rounded-xl text-kisan-950 shadow">
                   <AlertCircle className="w-5 h-5" />
                 </div>
-                <h1 className="text-xl font-black text-[#404E3B]">Farmer Grievance Portal</h1>
+                <div>
+                  <h1 className="text-xl font-black text-kisan-900">Farmer Grievance Portal</h1>
+                  {user && (
+                    <p className="text-xs text-slate-500 font-bold">
+                      {user.fullName} {user.phone ? `(${user.phone})` : ""}
+                    </p>
+                  )}
+                </div>
               </div>
             </div>
 
             <div className="flex items-center gap-3">
-              <nav className="flex items-center gap-2 bg-white p-1 rounded-xl border border-[#BAC8B1] text-xs font-bold">
+              <nav className="flex items-center gap-2 bg-white p-1 rounded-xl border border-slate-200 text-xs font-bold">
                 <Link
                   href="/book-slot"
-                  className="px-3 py-1.5 text-[#404E3B] hover:bg-[#BAC8B1]/30 rounded-lg flex items-center gap-1.5 transition-all"
+                  className="px-3 py-1.5 text-slate-700 hover:bg-slate-100 rounded-lg flex items-center gap-1.5 transition-all"
                 >
                   <Calendar className="w-3.5 h-3.5" /> Book Slot
                 </Link>
                 <Link
                   href="/complaints"
-                  className="px-3 py-1.5 bg-[#404E3B] text-white rounded-lg flex items-center gap-1.5 shadow-sm"
+                  className="px-3 py-1.5 bg-kisan-700 text-white rounded-lg flex items-center gap-1.5 shadow-sm"
                 >
                   <AlertCircle className="w-3.5 h-3.5" /> Complaints
                 </Link>
@@ -73,7 +80,7 @@ export default function FarmerComplaintsPage() {
           </main>
         </div>
 
-        <footer className="text-center text-xs text-[#6C8480] font-semibold pt-8 pb-4 max-w-4xl mx-auto w-full border-t border-[#BAC8B1]">
+        <footer className="text-center text-xs text-slate-500 font-semibold pt-8 pb-4 max-w-4xl mx-auto w-full border-t border-slate-200">
           Department of Food & Public Distribution | Government of India
         </footer>
       </div>

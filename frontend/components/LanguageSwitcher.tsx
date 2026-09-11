@@ -12,15 +12,15 @@ export default function LanguageSwitcher() {
   };
 
   return (
-    <div className="inline-flex items-center gap-1 bg-[#404E3B] border border-[#6C8480] rounded-xl p-1 text-xs shadow-md">
-      <Globe className="w-3.5 h-3.5 text-[#BAC8B1] ml-1.5" />
+    <div className="inline-flex items-center gap-1 bg-kisan-900/80 border border-kisan-700 rounded-xl p-1 text-xs shadow-md">
+      <Globe className="w-3.5 h-3.5 text-kisan-200 ml-1.5" />
       <button
         type="button"
         onClick={() => toggleLanguage("en")}
         className={`px-2.5 py-1 rounded-lg font-medium transition-all ${
           language === "en"
-            ? "bg-[#7B9669] text-white font-black shadow"
-            : "text-[#BAC8B1] hover:text-white"
+            ? "bg-kisan-700 text-white font-black shadow"
+            : "text-kisan-200 hover:text-white"
         }`}
       >
         English
@@ -30,8 +30,8 @@ export default function LanguageSwitcher() {
         onClick={() => toggleLanguage("hi")}
         className={`px-2.5 py-1 rounded-lg font-medium transition-all ${
           language === "hi"
-            ? "bg-[#7B9669] text-white font-black shadow"
-            : "text-[#BAC8B1] hover:text-white"
+            ? "bg-kisan-700 text-white font-black shadow"
+            : "text-kisan-200 hover:text-white"
         }`}
       >
         हिन्दी
@@ -41,8 +41,8 @@ export default function LanguageSwitcher() {
         onClick={() => toggleLanguage("mr")}
         className={`px-2.5 py-1 rounded-lg font-medium transition-all ${
           language === "mr"
-            ? "bg-[#7B9669] text-white font-black shadow"
-            : "text-[#BAC8B1] hover:text-white"
+            ? "bg-kisan-700 text-white font-black shadow"
+            : "text-kisan-200 hover:text-white"
         }`}
       >
         मराठी

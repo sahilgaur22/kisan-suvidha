@@ -50,7 +50,7 @@ export default function StaffFormModal({ centerId, isOpen, onClose }: StaffFormM
       <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 w-full max-w-md shadow-2xl space-y-4">
         <div className="flex items-center justify-between border-b border-slate-800 pb-3">
           <div className="flex items-center gap-2">
-            <UserPlus className="w-5 h-5 text-emerald-400" />
+            <UserPlus className="w-5 h-5 text-kisan-400" />
             <h3 className="text-base font-bold text-white">Create Ground Staff Account</h3>
           </div>
           <button type="button" onClick={onClose} className="text-slate-400 hover:text-white">
@@ -75,7 +75,7 @@ export default function StaffFormModal({ centerId, isOpen, onClose }: StaffFormM
                 placeholder="Vikram Singh"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl py-2 pl-9 pr-3 text-xs text-white focus:outline-none focus:border-emerald-500"
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl py-2 pl-9 pr-3 text-xs text-white focus:outline-none focus:border-kisan-400 font-semibold"
               />
             </div>
           </div>
@@ -90,7 +90,7 @@ export default function StaffFormModal({ centerId, isOpen, onClose }: StaffFormM
                 placeholder="10-digit phone"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl py-2 pl-9 pr-3 text-xs text-white focus:outline-none focus:border-emerald-500"
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl py-2 pl-9 pr-3 text-xs text-white focus:outline-none focus:border-kisan-400 font-semibold"
               />
             </div>
           </div>
@@ -105,7 +105,7 @@ export default function StaffFormModal({ centerId, isOpen, onClose }: StaffFormM
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl py-2 pl-9 pr-3 text-xs text-white focus:outline-none focus:border-emerald-500"
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl py-2 pl-9 pr-3 text-xs text-white focus:outline-none focus:border-kisan-400 font-semibold"
               />
             </div>
           </div>
@@ -113,7 +113,7 @@ export default function StaffFormModal({ centerId, isOpen, onClose }: StaffFormM
           <button
             type="submit"
             disabled={createStaffMutation.isPending}
-            className="w-full py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl text-xs transition-all disabled:opacity-50"
+            className="w-full py-2.5 bg-kisan-700 hover:bg-kisan-600 text-white font-bold rounded-xl text-xs transition-all disabled:opacity-50 shadow-md"
           >
             {createStaffMutation.isPending ? "Creating Staff Account..." : "Create Staff Account"}
           </button>

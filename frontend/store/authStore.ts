@@ -21,8 +21,8 @@ const memoryStorage: Record<string, string> = {};
 
 const safeGetItem = (key: string): string | null => {
   try {
-    if (typeof window !== "undefined" && window.localStorage) {
-      return localStorage.getItem(key);
+    if (typeof window !== "undefined" && window.sessionStorage) {
+      return sessionStorage.getItem(key);
     }
   } catch (e) {}
   return memoryStorage[key] || null;
@@ -30,8 +30,8 @@ const safeGetItem = (key: string): string | null => {
 
 const safeSetItem = (key: string, val: string) => {
   try {
-    if (typeof window !== "undefined" && window.localStorage) {
-      localStorage.setItem(key, val);
+    if (typeof window !== "undefined" && window.sessionStorage) {
+      sessionStorage.setItem(key, val);
     }
   } catch (e) {}
   memoryStorage[key] = val;
@@ -39,6 +39,9 @@ const safeSetItem = (key: string, val: string) => {
 
 const safeRemoveItem = (key: string) => {
   try {
+    if (typeof window !== "undefined" && window.sessionStorage) {
+      sessionStorage.removeItem(key);
+    }
     if (typeof window !== "undefined" && window.localStorage) {
       localStorage.removeItem(key);
     }
@@ -48,6 +51,11 @@ const safeRemoveItem = (key: string) => {
 
 const getInitialAuth = () => {
   try {
+    if (typeof window !== "undefined" && window.localStorage) {
+      localStorage.removeItem("access_token");
+      localStorage.removeItem("user_data");
+    }
+
     const token = safeGetItem("access_token");
     const storedUser = safeGetItem("user_data");
     if (token && storedUser) {

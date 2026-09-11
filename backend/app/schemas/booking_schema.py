@@ -19,7 +19,13 @@ class BookingResponse(BaseModel):
     id: str
     token_number: str
     farmer_id: str
+    farmer_name: Optional[str] = None
+    farmer_phone: Optional[str] = None
     center_id: str
+    center_name: Optional[str] = None
+    center_address: Optional[str] = None
+    center_district: Optional[str] = None
+    center_state: Optional[str] = None
     crop_name: str
     crop_volume_quintals: float
     actual_weight_quintals: Optional[float] = None
@@ -31,6 +37,10 @@ class BookingResponse(BaseModel):
     slot_end_time: time
     status: str
     channel: str
+    payment_amount: Optional[float] = None
+    msp_rate_applied: Optional[float] = None
+    transaction_ref: Optional[str] = None
+    payment_status: Optional[str] = None
     created_at: datetime
 
 

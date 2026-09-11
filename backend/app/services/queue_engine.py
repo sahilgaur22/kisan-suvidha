@@ -95,8 +95,11 @@ async def release_slot_on_cancellation(
     redis: aioredis.Redis, center_id: str, booking_date: Union[str, date]
 ) -> None:
     """Decrements center booking count in Redis upon token cancellation."""
-    date_str = booking_date.isoformat() if isinstance(booking_date, date) else str(booking_date)
-    count_key = f"queue:count:{center_id}:{date_str}"
-    current_count_str = await redis.get(count_key)
-    if current_count_str and int(current_count_str) > 0:
-        await redis.decr(count_key)
+    try:
+        date_str = booking_date.isoformat() if isinstance(booking_date, date) else str(booking_date)
+        count_key = f"queue:count:{center_id}:{date_str}"
+        current_count_str = await redis.get(count_key)
+        if current_count_str and int(current_count_str) > 0:
+            await redis.decr(count_key)
+    except Exception as e:
+        print(f"Redis release slot error: {e}", flush=True)

@@ -165,49 +165,96 @@ async def authenticate_user(
 
 from app.utils.twilio_client import send_sms_notification, send_whatsapp_notification
 
-async def send_farmer_otp(db: AsyncSession, phone: str, full_name: Optional[str] = None) -> str:
+async def send_farmer_otp(
+    db: AsyncSession,
+    phone: str,
+    full_name: Optional[str] = None,
+    is_registration: bool = False,
+) -> str:
     """Generates 6-digit OTP code and dispatches via Twilio SMS / WhatsApp."""
-    otp_code = f"{random.randint(100000, 999999)}"
-    OTP_CACHE[phone] = otp_code
+    clean_phone = phone.strip()
+    stmt = select(Farmer).where(Farmer.phone == clean_phone)
+    result = await db.execute(stmt)
+    farmer = result.scalar_one_or_none()
 
-    message = f"🌾 Kisan Suvidha Verification: Your OTP code for booking slot login is {otp_code}. Valid for 10 minutes. Do not share."
+    if is_registration:
+        if farmer:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="A farmer with this mobile number is already registered. Please use 'Existing Farmer Login'.",
+            )
+        if not full_name or not full_name.strip():
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Full name is required for new farmer registration.",
+            )
+    else:
+        # Existing farmer login
+        if not farmer:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Mobile number is not registered. Please complete New Farmer Registration first.",
+            )
+
+    otp_code = f"{random.randint(100000, 999999)}"
+    OTP_CACHE[clean_phone] = otp_code
+
+    action_text = "registration" if is_registration else "booking slot login"
+    message = f"🌾 Kisan Suvidha: Your OTP code for {action_text} is {otp_code}. Valid for 10 minutes. Do not share."
 
     # Dispatch SMS & WhatsApp notifications via network gateways
     try:
-        await send_sms_notification(to_phone=phone, message_body=message)
-        await send_whatsapp_notification(to_phone=phone, message_body=message)
+        await send_sms_notification(to_phone=clean_phone, message_body=message)
+        await send_whatsapp_notification(to_phone=clean_phone, message_body=message)
     except Exception as err:
-        logger.error(f"Error during OTP dispatch to {phone}: {err}")
+        logger.error(f"Error during OTP dispatch to {clean_phone}: {err}")
 
     return otp_code
 
 
 async def verify_farmer_otp(
-    db: AsyncSession, phone: str, otp: str, full_name: Optional[str] = None
+    db: AsyncSession,
+    phone: str,
+    otp: str,
+    full_name: Optional[str] = None,
+    is_registration: bool = False,
 ) -> Tuple[Farmer, str]:
     """
-    Validates farmer OTP code, registers farmer if new, and returns Farmer & access token.
+    Validates farmer OTP code, enforces registration vs login checks, and returns Farmer & access token.
     """
-    cached_otp = OTP_CACHE.get(phone, "123456")
+    clean_phone = phone.strip()
+    cached_otp = OTP_CACHE.get(clean_phone, "123456")
     if otp != cached_otp and otp != "123456":
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Invalid or expired OTP code.",
         )
 
-    stmt = select(Farmer).where(Farmer.phone == phone)
+    stmt = select(Farmer).where(Farmer.phone == clean_phone)
     result = await db.execute(stmt)
     farmer = result.scalar_one_or_none()
 
-    if not farmer:
+    if is_registration:
+        if farmer:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="A farmer with this mobile number is already registered. Please use 'Existing Farmer Login'.",
+            )
         farmer = Farmer(
-            full_name=full_name or f"Farmer {phone[-4:]}",
-            phone=phone,
+            full_name=full_name.strip() if full_name else f"Farmer {clean_phone[-4:]}",
+            phone=clean_phone,
             preferred_language="hi",
         )
         db.add(farmer)
         await db.commit()
         await db.refresh(farmer)
+    else:
+        # Existing farmer login
+        if not farmer:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Farmer record not found. Please complete New Farmer Registration first.",
+            )
 
     token = create_access_token(subject=str(farmer.id), role="farmer", center_id=None)
     return farmer, token

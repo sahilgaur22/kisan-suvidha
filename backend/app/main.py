@@ -101,7 +101,18 @@ async def lifespan(app: FastAPI):
                 ))
             else:
                 existing_c.permitted_moisture_percent = faq_m
-                existing_c.max_rejection_moisture_percent = max_m
+        # Seed Demo Registered Farmer (phone: 9876543212)
+        from app.models.farmer import Farmer
+        farmer_stmt = select(Farmer).where(Farmer.phone == "9876543212")
+        farmer_res = await db.execute(farmer_stmt)
+        if not farmer_res.scalar_one_or_none():
+            db.add(Farmer(
+                id=uuid.UUID("22222222-2222-2222-2222-222222222222"),
+                full_name="Rajesh Patel (Farmer)",
+                phone="9876543212",
+                preferred_language="hi",
+            ))
+            await db.commit()
 
         await db.commit()
 

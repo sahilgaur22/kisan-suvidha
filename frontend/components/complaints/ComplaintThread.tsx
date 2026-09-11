@@ -38,20 +38,20 @@ export default function ComplaintThread({ complaint, isAdmin = false }: Complain
     switch (complaint.status) {
       case "resolved":
         return (
-          <span className="px-2.5 py-0.5 rounded-full bg-emerald-950 border border-emerald-600/40 text-emerald-300 text-xs font-bold flex items-center gap-1">
-            <CheckCircle2 className="w-3 h-3" /> Resolved
+          <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 border border-emerald-300 text-emerald-900 text-xs font-bold flex items-center gap-1">
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700" /> Resolved
           </span>
         );
       case "rejected":
         return (
-          <span className="px-2.5 py-0.5 rounded-full bg-rose-950 border border-rose-600/40 text-rose-300 text-xs font-bold flex items-center gap-1">
-            <XCircle className="w-3 h-3" /> Closed
+          <span className="px-2.5 py-0.5 rounded-full bg-rose-100 border border-rose-300 text-rose-900 text-xs font-bold flex items-center gap-1">
+            <XCircle className="w-3.5 h-3.5 text-rose-700" /> Closed
           </span>
         );
       default:
         return (
-          <span className="px-2.5 py-0.5 rounded-full bg-amber-950 border border-amber-600/40 text-amber-300 text-xs font-bold flex items-center gap-1">
-            <Clock className="w-3 h-3" /> Open
+          <span className="px-2.5 py-0.5 rounded-full bg-amber-100 border border-amber-300 text-amber-900 text-xs font-bold flex items-center gap-1">
+            <Clock className="w-3.5 h-3.5 text-amber-700" /> Open
           </span>
         );
     }
@@ -93,7 +93,7 @@ export default function ComplaintThread({ complaint, isAdmin = false }: Complain
             placeholder="Type official resolution notes for farmer (min 5 characters)..."
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-emerald-500"
+            className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-kisan-500"
           />
           <div className="flex items-center gap-2 justify-end">
             <button
@@ -108,7 +108,7 @@ export default function ComplaintThread({ complaint, isAdmin = false }: Complain
               type="button"
               onClick={() => handleResolve("resolved")}
               disabled={resolveMutation.isPending}
-              className="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 rounded-lg text-xs font-bold shadow-md shadow-emerald-500/20"
+              className="px-3 py-1.5 bg-kisan-700 hover:bg-kisan-600 text-white rounded-lg text-xs font-bold shadow-md shadow-kisan-900/20"
             >
               {resolveMutation.isPending ? "Updating..." : "Resolve Ticket"}
             </button>

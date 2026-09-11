@@ -33,19 +33,19 @@ export default function SlotAvailabilityCalendar({
             onClick={() => onSelectDate(item.iso)}
             className={`p-3 rounded-2xl border text-left transition-all relative flex flex-col justify-between ${
               isSelected
-                ? "bg-[#7B9669] border-[#7B9669] text-[#404E3B] font-bold shadow-lg"
-                : "bg-[#404E3B] border-[#6C8480]/50 text-[#E6E6E6] hover:border-[#7B9669]"
+                ? "bg-kisan-700 border-kisan-500 text-white font-bold shadow-lg"
+                : "bg-kisan-950/80 border-kisan-700/60 text-slate-200 hover:border-kisan-500"
             }`}
           >
             <div>
-              <span className={`text-[10px] uppercase block ${isSelected ? "text-[#404E3B]" : "text-[#BAC8B1]"}`}>
+              <span className={`text-[10px] uppercase block ${isSelected ? "text-kisan-200" : "text-kisan-300"}`}>
                 {item.dayName}
               </span>
               <span className="text-xs font-extrabold block mt-0.5">{item.displayDate}</span>
             </div>
 
             {isSelected && (
-              <div className="absolute top-2 right-2 w-4 h-4 rounded-full bg-[#404E3B] text-[#7B9669] flex items-center justify-center">
+              <div className="absolute top-2 right-2 w-4 h-4 rounded-full bg-kisan-900 text-amber-400 flex items-center justify-center">
                 <Check className="w-3 h-3 stroke-[3]" />
               </div>
             )}

@@ -9,19 +9,24 @@ from app.schemas.dashboard_schema import DashboardStatsResponse
 from app.services.msp_service import parse_uuid_or_none
 
 
+from typing import Optional
+
 async def get_center_dashboard_stats(
-    db: AsyncSession, center_id: str
+    db: AsyncSession, center_id: str, target_date: Optional[date] = None, all_time: bool = False
 ) -> DashboardStatsResponse:
-    """Computes aggregated live statistics for a procurement center."""
-    today = date.today()
+    """Computes aggregated statistics for a procurement center for today, a specific date, or all time."""
     center_uuid = parse_uuid_or_none(center_id)
 
-    # 1. Booking counts today
+    # 1. Booking counts query
     b_stmt = (
         select(Booking.status, func.count(Booking.id), func.sum(Booking.crop_volume_quintals))
-        .where(Booking.center_id == center_uuid, Booking.booking_date == today)
-        .group_by(Booking.status)
+        .where(Booking.center_id == center_uuid)
     )
+    if not all_time:
+        effective_date = target_date or date.today()
+        b_stmt = b_stmt.where(Booking.booking_date == effective_date)
+
+    b_stmt = b_stmt.group_by(Booking.status)
     b_res = await db.execute(b_stmt)
     booking_rows = b_res.all()
 

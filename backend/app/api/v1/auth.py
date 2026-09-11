@@ -96,14 +96,25 @@ async def login(payload: LoginRequest, db: AsyncSession = Depends(get_db)):
 @router.post("/farmer/otp/send")
 async def send_otp(payload: FarmerOTPRequest, db: AsyncSession = Depends(get_db)):
     """Dispatches OTP to farmer mobile number via SMS / WhatsApp."""
-    otp_code = await send_farmer_otp(db, phone=payload.phone, full_name=payload.full_name)
+    otp_code = await send_farmer_otp(
+        db,
+        phone=payload.phone,
+        full_name=payload.full_name,
+        is_registration=payload.is_registration,
+    )
     return {"message": "OTP sent successfully", "phone": payload.phone, "debug_otp": otp_code}
 
 
 @router.post("/farmer/otp/verify", response_model=FarmerTokenResponse)
 async def verify_otp(payload: FarmerOTPVerifyRequest, db: AsyncSession = Depends(get_db)):
     """Verifies farmer OTP and returns farmer authentication token."""
-    farmer, token = await verify_farmer_otp(db, phone=payload.phone, otp=payload.otp, full_name=payload.full_name)
+    farmer, token = await verify_farmer_otp(
+        db,
+        phone=payload.phone,
+        otp=payload.otp,
+        full_name=payload.full_name,
+        is_registration=payload.is_registration,
+    )
 
     return FarmerTokenResponse(
         access_token=token,

@@ -30,7 +30,13 @@ async def read_farmer_my_bookings(
             id=str(b.id),
             token_number=b.token_number,
             farmer_id=str(b.farmer_id),
+            farmer_name=b.farmer.full_name if getattr(b, "farmer", None) else None,
+            farmer_phone=b.farmer.phone if getattr(b, "farmer", None) else None,
             center_id=str(b.center_id),
+            center_name=b.center.name if getattr(b, "center", None) else None,
+            center_address=b.center.address if getattr(b, "center", None) else None,
+            center_district=b.center.district if getattr(b, "center", None) else None,
+            center_state=b.center.state if getattr(b, "center", None) else None,
             crop_name=b.crop_name,
             crop_volume_quintals=float(b.crop_volume_quintals),
             actual_weight_quintals=float(b.actual_weight_quintals) if b.actual_weight_quintals is not None else None,
@@ -42,6 +48,10 @@ async def read_farmer_my_bookings(
             slot_end_time=b.slot_end_time,
             status=b.status,
             channel=b.channel,
+            payment_amount=float(b.payment.amount) if getattr(b, "payment", None) and b.payment else None,
+            msp_rate_applied=float(b.payment.msp_rate_applied) if getattr(b, "payment", None) and b.payment else None,
+            transaction_ref=b.payment.transaction_ref if getattr(b, "payment", None) and b.payment else None,
+            payment_status=b.payment.payment_status if getattr(b, "payment", None) and b.payment else None,
             created_at=b.created_at,
         )
         for b in bookings
@@ -67,7 +77,13 @@ async def create_new_booking(
         id=str(booking.id),
         token_number=booking.token_number,
         farmer_id=str(booking.farmer_id),
+        farmer_name=booking.farmer.full_name if getattr(booking, "farmer", None) else None,
+        farmer_phone=booking.farmer.phone if getattr(booking, "farmer", None) else None,
         center_id=str(booking.center_id),
+        center_name=booking.center.name if getattr(booking, "center", None) else None,
+        center_address=booking.center.address if getattr(booking, "center", None) else None,
+        center_district=booking.center.district if getattr(booking, "center", None) else None,
+        center_state=booking.center.state if getattr(booking, "center", None) else None,
         crop_name=booking.crop_name,
         crop_volume_quintals=float(booking.crop_volume_quintals),
         actual_weight_quintals=float(booking.actual_weight_quintals) if booking.actual_weight_quintals is not None else None,
@@ -79,6 +95,10 @@ async def create_new_booking(
         slot_end_time=booking.slot_end_time,
         status=booking.status,
         channel=booking.channel,
+        payment_amount=float(booking.payment.amount) if getattr(booking, "payment", None) and booking.payment else None,
+        msp_rate_applied=float(booking.payment.msp_rate_applied) if getattr(booking, "payment", None) and booking.payment else None,
+        transaction_ref=booking.payment.transaction_ref if getattr(booking, "payment", None) and booking.payment else None,
+        payment_status=booking.payment.payment_status if getattr(booking, "payment", None) and booking.payment else None,
         created_at=booking.created_at,
     )
 
@@ -88,6 +108,8 @@ async def create_new_booking(
 async def read_center_queue(
     center_id: Optional[str] = None,
     booking_date: Optional[date] = None,
+    include_cancelled: Optional[bool] = False,
+    all_statuses: Optional[bool] = False,
     current_user: CurrentUser = Depends(get_current_user_context),
     db: AsyncSession = Depends(get_db),
 ):
@@ -104,14 +126,22 @@ async def read_center_queue(
             target_center_id=target_center,
         )
 
-    bookings = await get_center_queue(db, center_id=target_center, booking_date=booking_date)
+    bookings = await get_center_queue(
+        db, center_id=target_center, booking_date=booking_date, include_cancelled=bool(include_cancelled), all_statuses=bool(all_statuses)
+    )
 
     return [
         BookingResponse(
             id=str(b.id),
             token_number=b.token_number,
             farmer_id=str(b.farmer_id),
+            farmer_name=b.farmer.full_name if getattr(b, "farmer", None) else None,
+            farmer_phone=b.farmer.phone if getattr(b, "farmer", None) else None,
             center_id=str(b.center_id),
+            center_name=b.center.name if getattr(b, "center", None) else None,
+            center_address=b.center.address if getattr(b, "center", None) else None,
+            center_district=b.center.district if getattr(b, "center", None) else None,
+            center_state=b.center.state if getattr(b, "center", None) else None,
             crop_name=b.crop_name,
             crop_volume_quintals=float(b.crop_volume_quintals),
             actual_weight_quintals=float(b.actual_weight_quintals) if b.actual_weight_quintals is not None else None,
@@ -123,6 +153,10 @@ async def read_center_queue(
             slot_end_time=b.slot_end_time,
             status=b.status,
             channel=b.channel,
+            payment_amount=float(b.payment.amount) if getattr(b, "payment", None) and b.payment else None,
+            msp_rate_applied=float(b.payment.msp_rate_applied) if getattr(b, "payment", None) and b.payment else None,
+            transaction_ref=b.payment.transaction_ref if getattr(b, "payment", None) and b.payment else None,
+            payment_status=b.payment.payment_status if getattr(b, "payment", None) and b.payment else None,
             created_at=b.created_at,
         )
         for b in bookings
@@ -151,7 +185,13 @@ async def change_booking_status(
         id=str(booking.id),
         token_number=booking.token_number,
         farmer_id=str(booking.farmer_id),
+        farmer_name=booking.farmer.full_name if getattr(booking, "farmer", None) else None,
+        farmer_phone=booking.farmer.phone if getattr(booking, "farmer", None) else None,
         center_id=str(booking.center_id),
+        center_name=booking.center.name if getattr(booking, "center", None) else None,
+        center_address=booking.center.address if getattr(booking, "center", None) else None,
+        center_district=booking.center.district if getattr(booking, "center", None) else None,
+        center_state=booking.center.state if getattr(booking, "center", None) else None,
         crop_name=booking.crop_name,
         crop_volume_quintals=float(booking.crop_volume_quintals),
         actual_weight_quintals=float(booking.actual_weight_quintals) if booking.actual_weight_quintals is not None else None,
@@ -163,5 +203,9 @@ async def change_booking_status(
         slot_end_time=booking.slot_end_time,
         status=booking.status,
         channel=booking.channel,
+        payment_amount=float(booking.payment.amount) if getattr(booking, "payment", None) and booking.payment else None,
+        msp_rate_applied=float(booking.payment.msp_rate_applied) if getattr(booking, "payment", None) and booking.payment else None,
+        transaction_ref=booking.payment.transaction_ref if getattr(booking, "payment", None) and booking.payment else None,
+        payment_status=booking.payment.payment_status if getattr(booking, "payment", None) and booking.payment else None,
         created_at=booking.created_at,
     )

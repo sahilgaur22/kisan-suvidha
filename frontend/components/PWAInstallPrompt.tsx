@@ -41,9 +41,9 @@ export default function PWAInstallPrompt() {
   if (!isVisible) return null;
 
   return (
-    <div className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 z-50 max-w-sm bg-slate-900 border border-emerald-500/50 p-4 rounded-2xl shadow-2xl flex items-center justify-between gap-3">
+    <div className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 z-50 max-w-sm bg-slate-900 border border-amber-500/50 p-4 rounded-2xl shadow-2xl flex items-center justify-between gap-3">
       <div className="flex items-center gap-3">
-        <div className="bg-emerald-500 p-2 rounded-xl text-slate-950">
+        <div className="bg-gradient-to-tr from-amber-400 to-kisan-400 p-2 rounded-xl text-slate-900">
           <Sprout className="w-5 h-5" />
         </div>
         <div>
@@ -56,7 +56,7 @@ export default function PWAInstallPrompt() {
         <button
           type="button"
           onClick={handleInstallClick}
-          className="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-lg text-xs flex items-center gap-1 transition-all"
+          className="px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-lg text-xs flex items-center gap-1 transition-all shadow-md"
         >
           <Download className="w-3.5 h-3.5" /> Install
         </button>

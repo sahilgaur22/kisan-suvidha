@@ -32,14 +32,16 @@ class TokenResponse(BaseModel):
 
 class FarmerOTPRequest(BaseModel):
     phone: str = Field(..., description="Farmer 10-digit mobile number")
-    full_name: Optional[str] = Field(None, description="Farmer full name for auto-registration")
+    full_name: Optional[str] = Field(None, description="Farmer full name for registration")
     preferred_language: str = Field("hi", description="Preferred language (hi/en)")
+    is_registration: bool = Field(False, description="True for new registration, False for existing login")
 
 
 class FarmerOTPVerifyRequest(BaseModel):
     phone: str = Field(..., description="Farmer 10-digit mobile number")
     otp: str = Field(..., min_length=4, max_length=6, description="Received OTP code")
     full_name: Optional[str] = Field(None, description="Farmer full name for registration")
+    is_registration: bool = Field(False, description="True for new registration, False for existing login")
 
 
 class FarmerTokenResponse(BaseModel):

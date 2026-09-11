@@ -51,14 +51,14 @@ export default function MSPEditor({ centerId }: MSPEditorProps) {
   };
 
   return (
-    <div className="bg-slate-900 border border-slate-800 p-8 rounded-3xl shadow-2xl space-y-6 max-w-xl mx-auto my-6">
+    <div className="bg-gradient-to-b from-slate-800 to-slate-900 border border-slate-700 p-8 rounded-3xl shadow-2xl space-y-6 max-w-xl mx-auto my-6">
       <div className="flex items-center gap-3">
-        <div className="bg-emerald-500 p-2.5 rounded-2xl text-slate-950">
+        <div className="bg-gradient-to-tr from-amber-400 to-kisan-400 p-2.5 rounded-2xl text-slate-950">
           <Sprout className="w-6 h-6" />
         </div>
         <div>
           <h2 className="text-xl font-bold text-white">Global Crop MSP Rate & Moisture Control</h2>
-          <p className="text-xs text-emerald-400">Updating MSP here applies universally across ALL Government Mandi Procurement Centers</p>
+          <p className="text-xs text-slate-400">Updating MSP here applies universally across ALL Government Mandi Procurement Centers</p>
         </div>
       </div>
 
@@ -87,7 +87,7 @@ export default function MSPEditor({ centerId }: MSPEditorProps) {
               <div key={r.id} className="p-3 bg-slate-900 rounded-xl border border-slate-800 space-y-1">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-white">{r.crop_name}</span>
-                  <span className="text-xs font-black text-emerald-400">₹{r.rate_per_quintal}/Qtl</span>
+                  <span className="text-xs font-black text-kisan-400">₹{r.rate_per_quintal}/Qtl</span>
                 </div>
                 <div className="flex items-center justify-between text-[10px] text-slate-400">
                   <span>FAQ Permitted: <strong className="text-slate-200">{r.permitted_moisture_percent}%</strong></span>
@@ -105,7 +105,7 @@ export default function MSPEditor({ centerId }: MSPEditorProps) {
           <select
             value={selectedCrop}
             onChange={(e) => setSelectedCrop(e.target.value)}
-            className="w-full bg-slate-950 border border-slate-800 rounded-xl py-3 px-4 text-sm text-white focus:outline-none focus:border-emerald-500 font-bold"
+            className="w-full bg-slate-950 border border-slate-700 rounded-xl py-3 px-4 text-sm text-white focus:outline-none focus:border-kisan-400 font-bold"
           >
             <option value="Paddy (Dhan)">Paddy (Dhan) — FAQ: 17%, Max: 19%</option>
             <option value="Wheat (Gehu)">Wheat (Gehu) — FAQ: 12%, Max: 14%</option>
@@ -118,14 +118,14 @@ export default function MSPEditor({ centerId }: MSPEditorProps) {
 
         {selectedCrop === "OTHER_CUSTOM" && (
           <div>
-            <label className="block text-xs font-semibold text-emerald-400 mb-1.5">Enter New Crop Name</label>
+            <label className="block text-xs font-semibold text-kisan-400 mb-1.5">Enter New Crop Name</label>
             <input
               type="text"
               required
               placeholder="e.g. Sugarcane, Chana, Turmeric"
               value={customCrop}
               onChange={(e) => setCustomCrop(e.target.value)}
-              className="w-full bg-slate-950 border border-emerald-600 rounded-xl py-3 px-4 text-sm text-white focus:outline-none focus:border-emerald-400 font-bold"
+              className="w-full bg-slate-950 border border-kisan-600 rounded-xl py-3 px-4 text-sm text-white focus:outline-none focus:border-kisan-400 font-bold"
             />
           </div>
         )}
@@ -140,7 +140,7 @@ export default function MSPEditor({ centerId }: MSPEditorProps) {
               required
               value={newRate}
               onChange={(e) => setNewRate(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-800 rounded-xl py-3 pl-10 pr-4 text-sm text-white focus:outline-none focus:border-emerald-500 font-bold"
+              className="w-full bg-slate-950 border border-slate-700 rounded-xl py-3 pl-10 pr-4 text-sm text-white focus:outline-none focus:border-kisan-400 font-bold"
             />
           </div>
         </div>
@@ -148,7 +148,7 @@ export default function MSPEditor({ centerId }: MSPEditorProps) {
         <button
           type="submit"
           disabled={updateMspMutation.isPending}
-          className="w-full py-3.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl text-sm transition-all shadow-xl shadow-emerald-500/20 disabled:opacity-50 flex items-center justify-center gap-2"
+          className="w-full py-3.5 bg-kisan-700 hover:bg-kisan-600 text-white font-bold rounded-xl text-sm transition-all shadow-xl disabled:opacity-50 flex items-center justify-center gap-2"
         >
           <Save className="w-4 h-4" /> {updateMspMutation.isPending ? "Broadcasting Update..." : "Update MSP Rate & Broadcast"}
         </button>

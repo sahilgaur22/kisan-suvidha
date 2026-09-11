@@ -12,10 +12,20 @@ export interface DashboardStats {
   open_complaints_count: number;
 }
 
-export function useDashboardStats(centerId: string | null) {
+export function useDashboardStats(
+  centerId: string | null,
+  targetDate?: string | null,
+  allTime?: boolean
+) {
   return useQuery<DashboardStats>({
-    queryKey: ["dashboard-stats", centerId],
-    queryFn: () => apiClient<DashboardStats>(`/dashboard/stats?center_id=${centerId}`),
+    queryKey: ["dashboard-stats", centerId, targetDate, allTime],
+    queryFn: () => {
+      const params = new URLSearchParams();
+      if (centerId) params.append("center_id", centerId);
+      if (allTime) params.append("all_time", "true");
+      else if (targetDate) params.append("target_date", targetDate);
+      return apiClient<DashboardStats>(`/dashboard/stats?${params.toString()}`);
+    },
     enabled: !!centerId,
     refetchInterval: 10000, // Refetch stats every 10s
   });

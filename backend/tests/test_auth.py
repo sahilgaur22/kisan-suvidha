@@ -9,18 +9,55 @@ from app.models.farmer import Farmer
 
 @pytest.mark.asyncio
 async def test_farmer_send_otp_endpoint():
-    """Verify farmer send OTP endpoint dispatches OTP code."""
-    transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as client:
-        response = await client.post(
-            f"{settings.API_V1_STR}/auth/farmer/otp/send",
-            json={"phone": "9876543210", "full_name": "Ramesh Kumar"}
-        )
-        assert response.status_code == 200
-        data = response.json()
-        assert "message" in data
-        assert "debug_otp" in data
-        assert data["phone"] == "9876543210"
+    """Verify farmer send OTP endpoint dispatches OTP code for registration and enforces registered login check."""
+    mock_db = AsyncMock()
+    mock_result_none = MagicMock()
+    mock_result_none.scalar_one_or_none.return_value = None
+
+    mock_db.execute.return_value = mock_result_none
+
+    async def override_get_db():
+        yield mock_db
+
+    app.dependency_overrides[get_db] = override_get_db
+
+    try:
+        transport = ASGITransport(app=app)
+        async with AsyncClient(transport=transport, base_url="http://test") as client:
+            # 1. New Farmer Registration OTP (phone not in DB)
+            response = await client.post(
+                f"{settings.API_V1_STR}/auth/farmer/otp/send",
+                json={"phone": "9998887771", "full_name": "New Tester Farmer", "is_registration": True}
+            )
+            assert response.status_code == 200
+            data = response.json()
+            assert "message" in data
+            assert "debug_otp" in data
+            assert data["phone"] == "9998887771"
+
+            # 2. Existing Farmer Login with unregistered phone -> 404
+            unreg_res = await client.post(
+                f"{settings.API_V1_STR}/auth/farmer/otp/send",
+                json={"phone": "0000000000", "is_registration": False}
+            )
+            assert unreg_res.status_code == 404
+
+            # 3. Existing Farmer Login with registered phone -> 200
+            mock_result_farmer = MagicMock()
+            mock_result_farmer.scalar_one_or_none.return_value = Farmer(
+                id="11111111-1111-1111-1111-111111111111",
+                full_name="Existing Farmer",
+                phone="9876543210",
+                preferred_language="hi"
+            )
+            mock_db.execute.return_value = mock_result_farmer
+            reg_res = await client.post(
+                f"{settings.API_V1_STR}/auth/farmer/otp/send",
+                json={"phone": "9876543210", "is_registration": False}
+            )
+            assert reg_res.status_code == 200
+    finally:
+        app.dependency_overrides.clear()
 
 
 @pytest.mark.asyncio

@@ -3,6 +3,7 @@ from datetime import date
 from typing import List, Optional
 from fastapi import HTTPException, status
 from sqlalchemy import select, func
+from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 import redis.asyncio as aioredis
 
@@ -66,7 +67,9 @@ async def notify_farmer_token_event(db: AsyncSession, booking: Booking, event_ty
             actual_m = booking.moisture_content_percent or 0.0
             msg = f"Kisan Suvidha: Token #{token} LOT REJECTED. Measured moisture ({actual_m}%) exceeds maximum limit. Sun-drying required before re-entry."
         elif event_type == "cancelled":
-            msg = f"Kisan Suvidha: Token #{token} has been CANCELLED."
+            msg = f"Kisan Suvidha Alert: Token #{token} for {crop} on {booking.booking_date} has been CANCELLED by Mandi Authority. For queries, contact helpline 1800-180-1551."
+        elif event_type in ["retrieved", "restored", "uncancelled"]:
+            msg = f"Kisan Suvidha Alert: Token #{token} for {crop} on {booking.booking_date} has been RETRIEVED / RESTORED (Arrival window: {booking.slot_start_time} - {booking.slot_end_time}). Your token is ACTIVE."
         else:
             msg = f"Kisan Suvidha: Token #{token} status updated to {event_type.upper()}."
 
@@ -148,7 +151,7 @@ async def create_booking(
 
 
 async def get_center_queue(
-    db: AsyncSession, center_id: str, booking_date: Optional[date] = None
+    db: AsyncSession, center_id: str, booking_date: Optional[date] = None, include_cancelled: bool = False, all_statuses: bool = False
 ) -> List[Booking]:
     """
     Queries center token queue with STRICT Date & Time ordering:
@@ -159,9 +162,24 @@ async def get_center_queue(
     except (ValueError, TypeError):
         center_uuid = uuid.UUID("11111111-1111-1111-1111-111111111111")
 
-    stmt = select(Booking).where(
-        Booking.center_id == center_uuid,
-        Booking.status.in_(["scheduled", "checked_in", "in_progress"]),
+    if all_statuses:
+        allowed_statuses = ["scheduled", "checked_in", "in_progress", "completed", "cancelled", "rejected", "no_show"]
+    elif include_cancelled:
+        allowed_statuses = ["scheduled", "checked_in", "in_progress", "cancelled"]
+    else:
+        allowed_statuses = ["scheduled", "checked_in", "in_progress"]
+
+    stmt = (
+        select(Booking)
+        .options(
+            selectinload(Booking.farmer),
+            selectinload(Booking.center),
+            selectinload(Booking.payment),
+        )
+        .where(
+            Booking.center_id == center_uuid,
+            Booking.status.in_(allowed_statuses),
+        )
     )
 
     if booking_date:
@@ -187,6 +205,11 @@ async def get_farmer_bookings(
 
     stmt = (
         select(Booking)
+        .options(
+            selectinload(Booking.farmer),
+            selectinload(Booking.center),
+            selectinload(Booking.payment),
+        )
         .where(Booking.farmer_id == farmer_uuid)
         .order_by(Booking.booking_date.desc(), Booking.slot_start_time.desc())
     )
@@ -210,7 +233,15 @@ async def update_booking_status(
             status_code=status.HTTP_404_NOT_FOUND, detail="Invalid booking token ID."
         )
 
-    stmt = select(Booking).where(Booking.id == booking_uuid)
+    stmt = (
+        select(Booking)
+        .options(
+            selectinload(Booking.farmer),
+            selectinload(Booking.center),
+            selectinload(Booking.payment),
+        )
+        .where(Booking.id == booking_uuid)
+    )
     result = await db.execute(stmt)
     booking = result.scalar_one_or_none()
 
@@ -218,6 +249,8 @@ async def update_booking_status(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Booking token not found."
         )
+
+    previous_status = booking.status
 
     if actual_weight_quintals is not None and actual_weight_quintals > 0:
         booking.actual_weight_quintals = actual_weight_quintals
@@ -247,12 +280,65 @@ async def update_booking_status(
 
     booking.status = new_status
     await db.commit()
-    await db.refresh(booking)
+
+    # If completed, generate / update Payment payout record
+    if new_status == BookingStatusEnum.COMPLETED.value:
+        from app.models.payment import Payment, PaymentStatusEnum
+        pay_stmt = select(Payment).where(Payment.booking_id == booking.id)
+        pay_res = await db.execute(pay_stmt)
+        existing_pay = pay_res.scalar_one_or_none()
+
+        msp_stmt = select(MSPRate).where(MSPRate.crop_name == booking.crop_name)
+        msp_res = await db.execute(msp_stmt)
+        msp_crop = msp_res.scalar_one_or_none()
+        rate_applied = float(msp_crop.rate_per_quintal) if msp_crop else 2300.0
+
+        final_weight = float(booking.adjusted_weight_quintals or booking.actual_weight_quintals or booking.crop_volume_quintals)
+        total_payout = round(final_weight * rate_applied, 2)
+
+        if not existing_pay:
+            new_payment = Payment(
+                id=uuid.uuid4(),
+                booking_id=booking.id,
+                center_id=booking.center_id,
+                amount=total_payout,
+                msp_rate_applied=rate_applied,
+                payment_status=PaymentStatusEnum.PROCESSED.value,
+                transaction_ref=f"PAY-{booking.token_number}",
+            )
+            db.add(new_payment)
+            await db.commit()
+        else:
+            existing_pay.amount = total_payout
+            existing_pay.msp_rate_applied = rate_applied
+            existing_pay.payment_status = PaymentStatusEnum.PROCESSED.value
+            await db.commit()
 
     if new_status == BookingStatusEnum.CANCELLED.value:
         await release_slot_on_cancellation(redis, str(booking.center_id), booking.booking_date)
 
+    # Refresh booking relations eagerly so farmer, center, and payment are available for serialization
+    refetch_stmt = (
+        select(Booking)
+        .options(
+            selectinload(Booking.farmer),
+            selectinload(Booking.center),
+            selectinload(Booking.payment),
+        )
+        .where(Booking.id == booking.id)
+    )
+    booking_res = await db.execute(refetch_stmt)
+    booking = booking_res.scalar_one_or_none() or booking
+
     # Dispatch automated status update notifications to farmer
-    await notify_farmer_token_event(db, booking, new_status)
+    if previous_status == BookingStatusEnum.CANCELLED.value and new_status in [
+        BookingStatusEnum.SCHEDULED.value,
+        BookingStatusEnum.CHECKED_IN.value,
+    ]:
+        notification_event = "retrieved"
+    else:
+        notification_event = new_status
+
+    await notify_farmer_token_event(db, booking, notification_event)
 
     return booking

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "../../store/authStore";
 
@@ -14,9 +14,16 @@ export default function ProtectedRoute({
   allowedRoles,
 }: ProtectedRouteProps) {
   const router = useRouter();
+  const [mounted, setMounted] = useState(false);
   const { user, isAuthenticated } = useAuthStore();
 
   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
+
     if (!isAuthenticated || !user) {
       router.push("/login");
       return;
@@ -25,9 +32,9 @@ export default function ProtectedRoute({
     if (allowedRoles && !allowedRoles.includes(user.role)) {
       router.push("/login");
     }
-  }, [user, isAuthenticated, allowedRoles, router]);
+  }, [mounted, user, isAuthenticated, allowedRoles, router]);
 
-  if (!isAuthenticated || !user) {
+  if (!mounted || !isAuthenticated || !user) {
     return (
       <div className="min-h-screen bg-slate-950 flex items-center justify-center text-emerald-400 text-sm font-semibold">
         Authenticating session...

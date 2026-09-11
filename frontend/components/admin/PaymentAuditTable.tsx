@@ -43,7 +43,7 @@ export default function PaymentAuditTable({ payments, isLoading }: PaymentAuditT
           <tbody className="divide-y divide-slate-800/60">
             {payments.map((p) => (
               <tr key={p.id} className="hover:bg-slate-800/40 transition-all">
-                <td className="py-3.5 px-4 font-mono font-bold text-emerald-400">
+                <td className="py-3.5 px-4 font-mono font-bold text-kisan-400">
                   {p.transaction_ref || "PAY-2026-0001"}
                 </td>
                 <td className="py-3.5 px-4 font-mono text-slate-400">{p.booking_id.slice(0, 8)}...</td>
@@ -52,8 +52,8 @@ export default function PaymentAuditTable({ payments, isLoading }: PaymentAuditT
                   ₹{p.amount.toLocaleString("en-IN")}
                 </td>
                 <td className="py-3.5 px-4">
-                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-950 border border-emerald-600/40 text-emerald-300 font-bold text-[11px]">
-                    <CheckCircle2 className="w-3 h-3" /> Processed
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-100 border border-emerald-300 text-emerald-900 font-bold text-[11px]">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700" /> Paid / DBT Disbursed
                   </span>
                 </td>
                 <td className="py-3.5 px-4 text-slate-400">

@@ -29,21 +29,21 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-slate-900 flex flex-col justify-between selection:bg-[#7B9669] selection:text-white">
+    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col justify-between selection:bg-kisan-100 selection:text-kisan-900">
       <div>
         {/* Top Official Government Header Bar */}
-        <header className="bg-[#404E3B] border-b-2 border-[#7B9669] py-3.5 px-6 sticky top-0 z-50 shadow-md">
+        <header className="bg-kisan-800 border-b-2 border-kisan-700 py-3.5 px-6 sticky top-0 z-50 shadow-md">
           <div className="max-w-6xl mx-auto flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="flex items-center justify-center p-2 rounded-xl bg-[#7B9669] text-white font-black shadow">
+              <div className="flex items-center justify-center p-2 rounded-xl bg-gradient-to-tr from-amber-400 to-kisan-400 text-slate-900 font-black shadow">
                 <Sprout className="w-6 h-6" />
               </div>
               <div>
-                <span className="text-[10px] text-[#BAC8B1] font-bold uppercase tracking-widest block">
+                <span className="text-[10px] text-kisan-200 font-bold uppercase tracking-widest block">
                   {t.govt_header.title}
                 </span>
                 <h1 className="text-lg font-extrabold text-white tracking-tight">
-                  {t.app_name} <span className="text-xs text-[#BAC8B1] font-normal ml-1">| {t.tagline}</span>
+                  {t.app_name} <span className="text-xs text-kisan-200 font-normal ml-1">| {t.tagline}</span>
                 </h1>
               </div>
             </div>
@@ -55,7 +55,7 @@ export default function Home() {
                 <div className="flex items-center gap-2">
                   <Link
                     href={getPortalLink()}
-                    className="px-4 py-2 rounded-xl bg-[#7B9669] hover:bg-[#6C8480] text-white font-bold text-xs flex items-center gap-1.5 transition-all shadow-md"
+                    className="px-4 py-2 rounded-xl bg-kisan-700 hover:bg-kisan-600 text-white font-bold text-xs flex items-center gap-1.5 transition-all shadow-md"
                   >
                     <User className="w-3.5 h-3.5" /> My Portal ({user.fullName.split(" ")[0]})
                   </Link>
@@ -71,7 +71,7 @@ export default function Home() {
               ) : (
                 <Link
                   href="/login"
-                  className="px-4 py-2 rounded-xl bg-[#7B9669] hover:bg-[#6C8480] text-white font-bold text-xs flex items-center gap-1.5 transition-all shadow-md"
+                  className="px-4 py-2 rounded-xl bg-kisan-700 hover:bg-kisan-600 text-white font-bold text-xs flex items-center gap-1.5 transition-all shadow-md"
                 >
                   {t.nav.login} <ChevronRight className="w-3.5 h-3.5" />
                 </Link>
@@ -82,7 +82,7 @@ export default function Home() {
 
         {/* HERO SECTION */}
         <section className="max-w-6xl mx-auto px-4 py-8">
-          <div className="relative rounded-3xl overflow-hidden border-2 border-[#6C8480]/30 shadow-2xl bg-[#404E3B] group">
+          <div className="relative rounded-3xl overflow-hidden border-2 border-kisan-700 shadow-2xl bg-gradient-to-br from-kisan-900 via-kisan-800 to-kisan-950 group">
             <div className="relative h-[480px] w-full">
               <Image
                 src="/hero_farmer.jpg"
@@ -91,46 +91,46 @@ export default function Home() {
                 priority
                 className="object-cover object-center filter brightness-75 group-hover:scale-105 transition-all duration-700"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#404E3B] via-[#404E3B]/85 to-[#404E3B]/40 p-8 md:p-12 flex flex-col justify-end">
+              <div className="absolute inset-0 bg-gradient-to-t from-kisan-950 via-kisan-900/85 to-kisan-900/40 p-8 md:p-12 flex flex-col justify-end">
                 
                 <div className="mb-4">
-                  <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#404E3B]/90 border border-[#7B9669] text-[#BAC8B1] text-xs font-bold backdrop-blur-md shadow-xl">
-                    <ShieldCheck className="w-4 h-4 text-[#7B9669]" />
+                  <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-kisan-900/90 border border-kisan-600 text-kisan-200 text-xs font-bold backdrop-blur-md shadow-xl">
+                    <ShieldCheck className="w-4 h-4 text-amber-400" />
                     {t.landing.hero_badge}
                   </span>
                 </div>
 
                 <h2 className="text-3xl md:text-5xl font-black text-white leading-tight tracking-tight drop-shadow-lg max-w-2xl">
                   {t.landing.hero_title_1}{" "}
-                  <span className="text-[#BAC8B1] underline decoration-[#7B9669] underline-offset-8">
+                  <span className="text-kisan-200 underline decoration-amber-400 underline-offset-8">
                     {t.landing.hero_title_highlight}
                   </span>
                 </h2>
 
-                <p className="mt-3 text-[#E6E6E6] text-sm md:text-base max-w-xl font-medium leading-relaxed drop-shadow-md">
+                <p className="mt-3 text-kisan-50 text-sm md:text-base max-w-xl font-medium leading-relaxed drop-shadow-md">
                   {t.landing.hero_subtitle}
                 </p>
 
                 <div className="flex flex-wrap items-center gap-4 mt-8">
                   <Link
                     href="/book-slot"
-                    className="px-6 py-3.5 rounded-2xl bg-[#7B9669] hover:bg-[#6C8480] text-white font-extrabold text-sm flex items-center gap-2 transition-all shadow-xl hover:scale-105"
+                    className="px-6 py-3.5 rounded-2xl bg-kisan-700 hover:bg-kisan-600 text-white font-extrabold text-sm flex items-center gap-2 transition-all shadow-xl hover:scale-105"
                   >
                     <Calendar className="w-4 h-4" /> {t.landing.cta_book}
                   </Link>
 
                   <Link
                     href="/login"
-                    className="px-6 py-3.5 rounded-2xl bg-[#404E3B] border-2 border-[#BAC8B1]/40 hover:border-[#7B9669] text-white font-bold text-sm backdrop-blur-md transition-all"
+                    className="px-6 py-3.5 rounded-2xl bg-kisan-950/70 border-2 border-kisan-600 hover:border-kisan-400 text-white font-bold text-sm backdrop-blur-md transition-all"
                   >
                     {t.landing.cta_login}
                   </Link>
 
                   <Link
                     href="/complaints"
-                    className="px-5 py-3.5 rounded-2xl bg-[#6C8480]/60 border border-[#BAC8B1]/40 text-white font-bold text-xs backdrop-blur-md hover:bg-[#6C8480] transition-all flex items-center gap-1.5"
+                    className="px-5 py-3.5 rounded-2xl bg-slate-900/80 border border-slate-700 text-slate-200 hover:text-white font-bold text-xs backdrop-blur-md hover:bg-slate-900 transition-all flex items-center gap-1.5"
                   >
-                    <AlertCircle className="w-4 h-4 text-[#BAC8B1]" /> {t.landing.cta_complaint}
+                    <AlertCircle className="w-4 h-4 text-amber-400" /> {t.landing.cta_complaint}
                   </Link>
                 </div>
 
@@ -143,42 +143,42 @@ export default function Home() {
         <section className="max-w-6xl mx-auto px-4 py-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             
-            <div className="bg-[#404E3B] text-white p-5 rounded-2xl shadow-lg border-l-4 border-[#7B9669] flex items-center justify-between">
+            <div className="bg-gradient-to-b from-kisan-700 to-kisan-800 text-white p-5 rounded-2xl shadow-lg border-l-4 border-amber-400 flex items-center justify-between">
               <div>
-                <span className="text-[11px] text-[#BAC8B1] font-semibold uppercase block">{t.msp_bar.paddy}</span>
-                <span className="text-xl font-black text-white mt-0.5 block">₹2,300 <span className="text-xs text-[#BAC8B1]">/ Qtl</span></span>
+                <span className="text-[11px] text-kisan-200 font-semibold uppercase block">{t.msp_bar.paddy}</span>
+                <span className="text-xl font-black text-white mt-0.5 block">₹2,300 <span className="text-xs text-kisan-200">/ Qtl</span></span>
               </div>
-              <div className="p-3 bg-[#7B9669]/30 text-[#BAC8B1] rounded-xl">
+              <div className="p-3 bg-kisan-900/40 text-amber-300 rounded-xl">
                 <IndianRupee className="w-5 h-5" />
               </div>
             </div>
 
-            <div className="bg-[#404E3B] text-white p-5 rounded-2xl shadow-lg border-l-4 border-[#7B9669] flex items-center justify-between">
+            <div className="bg-gradient-to-b from-kisan-700 to-kisan-800 text-white p-5 rounded-2xl shadow-lg border-l-4 border-amber-400 flex items-center justify-between">
               <div>
-                <span className="text-[11px] text-[#BAC8B1] font-semibold uppercase block">{t.msp_bar.wheat}</span>
-                <span className="text-xl font-black text-white mt-0.5 block">₹2,425 <span className="text-xs text-[#BAC8B1]">/ Qtl</span></span>
+                <span className="text-[11px] text-kisan-200 font-semibold uppercase block">{t.msp_bar.wheat}</span>
+                <span className="text-xl font-black text-white mt-0.5 block">₹2,425 <span className="text-xs text-kisan-200">/ Qtl</span></span>
               </div>
-              <div className="p-3 bg-[#7B9669]/30 text-[#BAC8B1] rounded-xl">
+              <div className="p-3 bg-kisan-900/40 text-amber-300 rounded-xl">
                 <IndianRupee className="w-5 h-5" />
               </div>
             </div>
 
-            <div className="bg-[#404E3B] text-white p-5 rounded-2xl shadow-lg border-l-4 border-[#7B9669] flex items-center justify-between">
+            <div className="bg-gradient-to-b from-kisan-700 to-kisan-800 text-white p-5 rounded-2xl shadow-lg border-l-4 border-amber-400 flex items-center justify-between">
               <div>
-                <span className="text-[11px] text-[#BAC8B1] font-semibold uppercase block">{t.msp_bar.weighing}</span>
-                <span className="text-sm font-bold text-[#BAC8B1] mt-1 block">{t.msp_bar.weighing_sub}</span>
+                <span className="text-[11px] text-kisan-200 font-semibold uppercase block">{t.msp_bar.weighing}</span>
+                <span className="text-sm font-bold text-kisan-200 mt-1 block">{t.msp_bar.weighing_sub}</span>
               </div>
-              <div className="p-3 bg-[#7B9669]/30 text-[#BAC8B1] rounded-xl">
+              <div className="p-3 bg-kisan-900/40 text-amber-300 rounded-xl">
                 <Scale className="w-5 h-5" />
               </div>
             </div>
 
-            <div className="bg-[#404E3B] text-white p-5 rounded-2xl shadow-lg border-l-4 border-[#7B9669] flex items-center justify-between">
+            <div className="bg-gradient-to-b from-kisan-700 to-kisan-800 text-white p-5 rounded-2xl shadow-lg border-l-4 border-amber-400 flex items-center justify-between">
               <div>
-                <span className="text-[11px] text-[#BAC8B1] font-semibold uppercase block">{t.msp_bar.congestion}</span>
+                <span className="text-[11px] text-kisan-200 font-semibold uppercase block">{t.msp_bar.congestion}</span>
                 <span className="text-sm font-bold text-white mt-1 block">{t.msp_bar.congestion_sub}</span>
               </div>
-              <div className="p-3 bg-[#7B9669]/30 text-[#BAC8B1] rounded-xl">
+              <div className="p-3 bg-kisan-900/40 text-amber-300 rounded-xl">
                 <Clock className="w-5 h-5" />
               </div>
             </div>
@@ -189,36 +189,36 @@ export default function Home() {
         {/* Feature Highlights Section */}
         <section className="max-w-6xl mx-auto px-4 py-8">
           <div className="text-center mb-8">
-            <h3 className="text-2xl font-black text-[#404E3B]">{t.services.title}</h3>
-            <p className="text-xs text-[#6C8480] font-semibold mt-1">{t.services.subtitle}</p>
+            <h3 className="text-2xl font-black text-kisan-900">{t.services.title}</h3>
+            <p className="text-xs text-slate-500 font-semibold mt-1">{t.services.subtitle}</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div className="bg-white border-2 border-[#BAC8B1] p-6 rounded-2xl space-y-3 shadow-md hover:shadow-xl transition-all">
-              <div className="p-3.5 bg-[#7B9669] text-white rounded-xl w-fit shadow">
+            <div className="bg-white border-2 border-slate-200 hover:border-kisan-600 p-6 rounded-2xl space-y-3 shadow-md hover:shadow-xl transition-all">
+              <div className="p-3.5 bg-kisan-700 text-white rounded-xl w-fit shadow">
                 <Calendar className="w-6 h-6" />
               </div>
-              <h4 className="text-lg font-bold text-[#404E3B]">{t.services.card1_title}</h4>
+              <h4 className="text-lg font-bold text-slate-800">{t.services.card1_title}</h4>
               <p className="text-xs text-slate-600 leading-relaxed font-medium">
                 {t.services.card1_desc}
               </p>
             </div>
 
-            <div className="bg-white border-2 border-[#BAC8B1] p-6 rounded-2xl space-y-3 shadow-md hover:shadow-xl transition-all">
-              <div className="p-3.5 bg-[#7B9669] text-white rounded-xl w-fit shadow">
+            <div className="bg-white border-2 border-slate-200 hover:border-kisan-600 p-6 rounded-2xl space-y-3 shadow-md hover:shadow-xl transition-all">
+              <div className="p-3.5 bg-kisan-700 text-white rounded-xl w-fit shadow">
                 <Phone className="w-6 h-6" />
               </div>
-              <h4 className="text-lg font-bold text-[#404E3B]">{t.services.card2_title}</h4>
+              <h4 className="text-lg font-bold text-slate-800">{t.services.card2_title}</h4>
               <p className="text-xs text-slate-600 leading-relaxed font-medium">
                 {t.services.card2_desc}
               </p>
             </div>
 
-            <div className="bg-white border-2 border-[#BAC8B1] p-6 rounded-2xl space-y-3 shadow-md hover:shadow-xl transition-all">
-              <div className="p-3.5 bg-[#7B9669] text-white rounded-xl w-fit shadow">
+            <div className="bg-white border-2 border-slate-200 hover:border-kisan-600 p-6 rounded-2xl space-y-3 shadow-md hover:shadow-xl transition-all">
+              <div className="p-3.5 bg-kisan-700 text-white rounded-xl w-fit shadow">
                 <Users className="w-6 h-6" />
               </div>
-              <h4 className="text-lg font-bold text-[#404E3B]">{t.services.card3_title}</h4>
+              <h4 className="text-lg font-bold text-slate-800">{t.services.card3_title}</h4>
               <p className="text-xs text-slate-600 leading-relaxed font-medium">
                 {t.services.card3_desc}
               </p>
@@ -226,24 +226,24 @@ export default function Home() {
           </div>
 
           {/* SMS / WhatsApp Farmer Quick-Start Banner */}
-          <div className="bg-[#404E3B] text-white p-6 rounded-3xl border-2 border-[#BAC8B1]/40 shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="bg-gradient-to-br from-kisan-900 via-kisan-800 to-kisan-950 text-white p-6 rounded-3xl border-2 border-kisan-700 shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-4">
-              <div className="p-4 bg-[#7B9669] text-white rounded-2xl shadow-lg shrink-0">
+              <div className="p-4 bg-gradient-to-tr from-amber-400 to-kisan-400 text-slate-900 rounded-2xl shadow-lg shrink-0">
                 <Smartphone className="w-8 h-8" />
               </div>
               <div>
                 <h4 className="text-lg font-extrabold text-white">{t.sms_banner.title}</h4>
-                <p className="text-xs text-[#BAC8B1] mt-0.5">{t.sms_banner.subtitle}</p>
-                <div className="mt-2 font-mono text-xs bg-black/40 text-[#BAC8B1] p-2.5 rounded-xl border border-[#6C8480]/50">
+                <p className="text-xs text-kisan-200 mt-0.5">{t.sms_banner.subtitle}</p>
+                <div className="mt-2 font-mono text-xs bg-black/40 text-amber-300 p-2.5 rounded-xl border border-kisan-700">
                   BOOK [CENTER_CODE] [CROP] [WEIGHT] [VEHICLE] [DATE]
                 </div>
               </div>
             </div>
 
-            <div className="bg-[#7B9669]/20 border border-[#7B9669]/50 p-4 rounded-2xl text-xs space-y-1.5 shrink-0 text-center md:text-left">
-              <span className="text-[11px] text-[#BAC8B1] uppercase font-bold block">{t.sms_banner.helpline_title}</span>
+            <div className="bg-kisan-800/80 border border-kisan-600/60 p-4 rounded-2xl text-xs space-y-1.5 shrink-0 text-center md:text-left">
+              <span className="text-[11px] text-kisan-200 uppercase font-bold block">{t.sms_banner.helpline_title}</span>
               <span className="text-base font-black text-white block">1800-180-1551</span>
-              <span className="text-[11px] text-[#7B9669] font-bold block">{t.sms_banner.whatsapp_title}: +91 98765 43210</span>
+              <span className="text-[11px] text-amber-400 font-bold block">{t.sms_banner.whatsapp_title}: +91 98765 43210</span>
             </div>
           </div>
 

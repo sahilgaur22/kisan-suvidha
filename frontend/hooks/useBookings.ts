@@ -32,15 +32,28 @@ export interface FarmerBookingRecord {
   id: string;
   token_number: string;
   farmer_id: string;
+  farmer_name?: string | null;
+  farmer_phone?: string | null;
   center_id: string;
+  center_name?: string | null;
+  center_address?: string | null;
+  center_district?: string | null;
+  center_state?: string | null;
   crop_name: string;
   crop_volume_quintals: number;
+  actual_weight_quintals?: number | null;
+  moisture_content_percent?: number | null;
+  adjusted_weight_quintals?: number | null;
   vehicle_type: string;
   booking_date: string;
   slot_start_time: string;
   slot_end_time: string;
   status: string;
   channel: string;
+  payment_amount?: number | null;
+  msp_rate_applied?: number | null;
+  transaction_ref?: string | null;
+  payment_status?: string | null;
   created_at: string;
 }
 
@@ -69,5 +82,24 @@ export function useCreateBooking() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["my-bookings"] });
     },
+  });
+}
+
+export function useCenterBookings(
+  centerId: string | null,
+  bookingDate?: string | null,
+  allStatuses: boolean = true
+) {
+  return useQuery<FarmerBookingRecord[]>({
+    queryKey: ["center-bookings", centerId, bookingDate, allStatuses],
+    queryFn: () => {
+      const params = new URLSearchParams();
+      if (bookingDate) params.append("booking_date", bookingDate);
+      if (allStatuses) params.append("all_statuses", "true");
+      const queryStr = params.toString() ? `?${params.toString()}` : "";
+      return apiClient<FarmerBookingRecord[]>(`/bookings/queue/${centerId}${queryStr}`);
+    },
+    enabled: !!centerId,
+    refetchInterval: 15000,
   });
 }
