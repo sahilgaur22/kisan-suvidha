@@ -152,3 +152,72 @@ async def test_cancel_and_uncancel_token_status():
                 mock_notify.assert_called_with(mock_db, mock_booking, "retrieved")
     finally:
         app.dependency_overrides.clear()
+
+
+@pytest.mark.asyncio
+async def test_create_booking_endpoint():
+    """Verify farmer slot booking creation and response serialization."""
+    center_id = "11111111-1111-1111-1111-111111111111"
+    farmer_id = "66666666-6666-6666-6666-666666666666"
+
+    mock_user = CurrentUser(
+        user_id=farmer_id,
+        role="farmer",
+        center_id=None
+    )
+
+    mock_farmer = Farmer(
+        id=uuid.UUID(farmer_id),
+        full_name="Ramesh Kumar",
+        phone="9876543210",
+        preferred_language="hi",
+        created_at=datetime.now(timezone.utc),
+    )
+
+    mock_created_booking = Booking(
+        id=uuid.uuid4(),
+        token_number="CTR001-0001",
+        farmer_id=uuid.UUID(farmer_id),
+        center_id=uuid.UUID(center_id),
+        crop_name="Paddy (Dhan)",
+        crop_volume_quintals=50.0,
+        vehicle_type="tractor_trolley",
+        booking_date=date(2026, 9, 15),
+        slot_start_time=time(9, 0),
+        slot_end_time=time(9, 30),
+        status=BookingStatusEnum.SCHEDULED.value,
+        channel=BookingChannelEnum.WEB.value,
+        created_at=datetime.now(timezone.utc),
+    )
+    mock_created_booking.farmer = mock_farmer
+
+    mock_db = AsyncMock()
+    mock_redis = AsyncMock()
+
+    app.dependency_overrides[get_current_user_context] = lambda: mock_user
+    app.dependency_overrides[get_db] = lambda: mock_db
+    app.dependency_overrides[get_redis_client] = lambda: mock_redis
+
+    try:
+        transport = ASGITransport(app=app)
+        async with AsyncClient(transport=transport, base_url="http://test") as client:
+            with patch("app.api.v1.bookings.create_booking", return_value=mock_created_booking):
+                resp = await client.post(
+                    f"{settings.API_V1_STR}/bookings",
+                    json={
+                        "center_id": center_id,
+                        "crop_name": "Paddy (Dhan)",
+                        "crop_volume_quintals": 50.0,
+                        "vehicle_type": "tractor_trolley",
+                        "booking_date": "2026-09-15",
+                        "channel": "web"
+                    }
+                )
+                assert resp.status_code == 201
+                data = resp.json()
+                assert data["token_number"] == "CTR001-0001"
+                assert data["farmer_name"] == "Ramesh Kumar"
+                assert data["status"] == "scheduled"
+    finally:
+        app.dependency_overrides.clear()
+

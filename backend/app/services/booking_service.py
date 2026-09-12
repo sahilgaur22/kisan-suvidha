@@ -139,10 +139,22 @@ async def create_booking(
 
     db.add(booking)
     await db.commit()
-    await db.refresh(booking)
 
     # 6. Increment Redis rate limit counter
     await increment_daily_booking_limit(redis, farmer_id, payload.booking_date)
+
+    # Refresh booking relations eagerly so farmer, center, and payment are available for serialization
+    refetch_stmt = (
+        select(Booking)
+        .options(
+            selectinload(Booking.farmer),
+            selectinload(Booking.center),
+            selectinload(Booking.payment),
+        )
+        .where(Booking.id == booking.id)
+    )
+    booking_res = await db.execute(refetch_stmt)
+    booking = booking_res.scalar_one_or_none() or booking
 
     # 7. Send automated creation SMS & WhatsApp notifications
     await notify_farmer_token_event(db, booking, "created")

@@ -78,3 +78,50 @@ async def test_staff_blocked_from_admin_complaint_inbox():
             assert "Only Center Admins" in resp.json()["detail"]
     finally:
         app.dependency_overrides.clear()
+
+
+@pytest.mark.asyncio
+async def test_read_farmer_my_complaints_endpoint():
+    """Verify farmer can retrieve their own grievance complaints and resolution responses."""
+    farmer_id = "11111111-1111-1111-1111-111111111111"
+    center_id = "22222222-2222-2222-2222-222222222222"
+
+    mock_user = CurrentUser(user_id=farmer_id, role="farmer", center_id=None)
+    mock_complaint = Complaint(
+        id="33333333-3333-3333-3333-333333333333",
+        ticket_number="TKT-2026-0001",
+        farmer_id=farmer_id,
+        center_id=center_id,
+        booking_id=None,
+        category=ComplaintCategoryEnum.DELAY.value,
+        subject="Gate Entry Delay",
+        description="Unreasonable 3-hour delay at weighbridge.",
+        status=ComplaintStatusEnum.RESOLVED.value,
+        resolution_notes="Scale calibration resolved and expedited entry granted.",
+        resolved_by=None,
+        created_at=datetime.now(timezone.utc),
+        updated_at=datetime.now(timezone.utc),
+    )
+
+    mock_db = AsyncMock()
+    mock_result = MagicMock()
+    mock_result.scalars().all.return_value = [mock_complaint]
+    mock_db.execute.return_value = mock_result
+
+    app.dependency_overrides[get_current_user_context] = lambda: mock_user
+    app.dependency_overrides[get_db] = lambda: mock_db
+
+    try:
+        transport = ASGITransport(app=app)
+        async with AsyncClient(transport=transport, base_url="http://test") as client:
+            resp = await client.get(f"{settings.API_V1_STR}/complaints/my")
+            assert resp.status_code == 200
+            data = resp.json()
+            assert len(data) == 1
+            assert data[0]["ticket_number"] == "TKT-2026-0001"
+            assert data[0]["status"] == "resolved"
+            assert data[0]["subject"] == "Gate Entry Delay"
+            assert data[0]["resolution_notes"] == "Scale calibration resolved and expedited entry granted."
+    finally:
+        app.dependency_overrides.clear()
+

@@ -31,6 +31,13 @@ export function useCenterComplaints(centerId: string | null) {
   });
 }
 
+export function useMyComplaints() {
+  return useQuery<ComplaintRecord[]>({
+    queryKey: ["my-complaints"],
+    queryFn: () => apiClient<ComplaintRecord[]>("/complaints/my"),
+  });
+}
+
 export function useCreateComplaint() {
   const queryClient = useQueryClient();
 
@@ -42,6 +49,7 @@ export function useCreateComplaint() {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["center-complaints"] });
+      queryClient.invalidateQueries({ queryKey: ["my-complaints"] });
     },
   });
 }

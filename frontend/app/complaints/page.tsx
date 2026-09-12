@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, AlertCircle, Calendar, LogOut } from "lucide-react";
 import ComplaintForm from "../../components/complaints/ComplaintForm";
+import FarmerComplaintsLog from "../../components/complaints/FarmerComplaintsLog";
 import ProtectedRoute from "../../components/auth/ProtectedRoute";
 import LanguageSwitcher from "../../components/LanguageSwitcher";
 import { useAuthStore } from "../../store/authStore";
@@ -75,8 +76,9 @@ export default function FarmerComplaintsPage() {
             </div>
           </header>
 
-          <main className="max-w-4xl mx-auto w-full">
+          <main className="max-w-4xl mx-auto w-full space-y-6">
             <ComplaintForm />
+            <FarmerComplaintsLog />
           </main>
         </div>
 

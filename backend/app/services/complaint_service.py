@@ -33,6 +33,7 @@ async def create_complaint(
         center_id=uuid.UUID(payload.center_id),
         booking_id=parse_uuid_or_none(payload.booking_id),
         category=payload.category.value,
+        subject=payload.subject,
         description=payload.description,
         status=ComplaintStatusEnum.OPEN.value,
         created_at=now,
@@ -66,6 +67,24 @@ async def get_center_complaints(
         stmt = stmt.where(Complaint.status == status_filter)
 
     stmt = stmt.order_by(Complaint.created_at.desc())
+    result = await db.execute(stmt)
+    return list(result.scalars().all())
+
+
+async def get_farmer_complaints(
+    db: AsyncSession, farmer_id: str
+) -> List[Complaint]:
+    """Retrieves all grievance tickets submitted by a specific farmer."""
+    try:
+        farmer_uuid = uuid.UUID(farmer_id)
+    except (ValueError, TypeError):
+        return []
+
+    stmt = (
+        select(Complaint)
+        .where(Complaint.farmer_id == farmer_uuid)
+        .order_by(Complaint.created_at.desc())
+    )
     result = await db.execute(stmt)
     return list(result.scalars().all())
 

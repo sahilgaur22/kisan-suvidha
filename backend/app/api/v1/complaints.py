@@ -7,12 +7,39 @@ from app.schemas.complaint_schema import (
     ComplaintCreateRequest, ComplaintResponse, ComplaintResolveRequest
 )
 from app.services.complaint_service import (
-    create_complaint, get_center_complaints, resolve_complaint
+    create_complaint, get_center_complaints, get_farmer_complaints, resolve_complaint
 )
 from app.core.deps import get_current_user_context, CurrentUser
 from app.core.rbac import verify_center_access, CENTER_ADMIN, SUPER_ADMIN
 
 router = APIRouter(prefix="/complaints", tags=["Grievance & Resolution"])
+
+
+@router.get("/my", response_model=List[ComplaintResponse])
+async def read_farmer_my_complaints(
+    current_user: CurrentUser = Depends(get_current_user_context),
+    db: AsyncSession = Depends(get_db),
+):
+    """Returns grievance ticket history and resolution responses for the currently authenticated farmer."""
+    complaints = await get_farmer_complaints(db, farmer_id=current_user.user_id)
+    return [
+        ComplaintResponse(
+            id=str(c.id),
+            ticket_number=c.ticket_number,
+            farmer_id=str(c.farmer_id),
+            center_id=str(c.center_id),
+            booking_id=str(c.booking_id) if c.booking_id else None,
+            category=c.category,
+            subject=c.subject,
+            description=c.description,
+            status=c.status,
+            resolution_notes=c.resolution_notes,
+            resolved_by=str(c.resolved_by) if c.resolved_by else None,
+            created_at=c.created_at,
+            updated_at=c.updated_at,
+        )
+        for c in complaints
+    ]
 
 
 @router.post("", response_model=ComplaintResponse, status_code=status.HTTP_201_CREATED)
@@ -31,6 +58,7 @@ async def submit_complaint(
         center_id=str(complaint.center_id),
         booking_id=str(complaint.booking_id) if complaint.booking_id else None,
         category=complaint.category,
+        subject=complaint.subject,
         description=complaint.description,
         status=complaint.status,
         resolution_notes=complaint.resolution_notes,
@@ -73,6 +101,7 @@ async def list_center_complaints(
             center_id=str(c.center_id),
             booking_id=str(c.booking_id) if c.booking_id else None,
             category=c.category,
+            subject=c.subject,
             description=c.description,
             status=c.status,
             resolution_notes=c.resolution_notes,
@@ -109,6 +138,7 @@ async def update_complaint_resolution(
         center_id=str(complaint.center_id),
         booking_id=str(complaint.booking_id) if complaint.booking_id else None,
         category=complaint.category,
+        subject=complaint.subject,
         description=complaint.description,
         status=complaint.status,
         resolution_notes=complaint.resolution_notes,

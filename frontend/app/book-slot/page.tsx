@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, Sprout, AlertCircle, LogOut, Calendar, User, Phone, ShieldCheck, CheckCircle2 } from "lucide-react";
 import SlotBookingForm from "../../components/booking/SlotBookingForm";
 import FarmerBookingHistory from "../../components/booking/FarmerBookingHistory";
+import FarmerComplaintsLog from "../../components/complaints/FarmerComplaintsLog";
 import LanguageSwitcher from "../../components/LanguageSwitcher";
 import ProtectedRoute from "../../components/auth/ProtectedRoute";
 import { useUIStore } from "../../store/uiStore";
@@ -117,6 +118,7 @@ export default function BookSlotPage() {
 
           <SlotBookingForm />
           <FarmerBookingHistory />
+          <FarmerComplaintsLog />
         </main>
 
         <footer className="text-center text-xs text-slate-500 font-semibold pt-8 pb-4">
