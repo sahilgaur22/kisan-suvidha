@@ -188,13 +188,6 @@ async def send_farmer_otp(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Full name is required for new farmer registration.",
             )
-    else:
-        # Existing farmer login
-        if not farmer:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Mobile number is not registered. Please complete New Farmer Registration first.",
-            )
 
     otp_code = f"{random.randint(100000, 999999)}"
     OTP_CACHE[clean_phone] = otp_code
@@ -220,7 +213,7 @@ async def verify_farmer_otp(
     is_registration: bool = False,
 ) -> Tuple[Farmer, str]:
     """
-    Validates farmer OTP code, enforces registration vs login checks, and returns Farmer & access token.
+    Validates farmer OTP code, auto-provisions farmer if not registered, and returns Farmer & access token.
     """
     clean_phone = phone.strip()
     cached_otp = OTP_CACHE.get(clean_phone, "123456")
@@ -234,12 +227,7 @@ async def verify_farmer_otp(
     result = await db.execute(stmt)
     farmer = result.scalar_one_or_none()
 
-    if is_registration:
-        if farmer:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="A farmer with this mobile number is already registered. Please use 'Existing Farmer Login'.",
-            )
+    if not farmer:
         farmer = Farmer(
             full_name=full_name.strip() if full_name else f"Farmer {clean_phone[-4:]}",
             phone=clean_phone,
@@ -248,13 +236,10 @@ async def verify_farmer_otp(
         db.add(farmer)
         await db.commit()
         await db.refresh(farmer)
-    else:
-        # Existing farmer login
-        if not farmer:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Farmer record not found. Please complete New Farmer Registration first.",
-            )
+    elif is_registration and full_name and full_name.strip():
+        farmer.full_name = full_name.strip()
+        await db.commit()
+        await db.refresh(farmer)
 
     token = create_access_token(subject=str(farmer.id), role="farmer", center_id=None)
     return farmer, token

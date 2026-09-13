@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { BookingToken } from "../../store/queueStore";
-import { Clock, Truck, Scale, User, CheckCircle2, PlayCircle, XCircle, RotateCcw } from "lucide-react";
+import { Clock, Truck, Scale, User, CheckCircle2, PlayCircle, XCircle, RotateCcw, Calendar } from "lucide-react";
 import { apiClient } from "../../lib/api-client";
 
 interface TokenCardProps {
@@ -130,6 +130,10 @@ export default function TokenCard({ token, onStatusUpdate }: TokenCardProps) {
         <div className="flex items-center justify-between">
           <span className="flex items-center gap-1 text-kisan-200"><Truck className="w-3.5 h-3.5 text-amber-400" /> Vehicle</span>
           <span className="font-semibold text-kisan-300 capitalize">{token.vehicleType.replace("_", " ")}</span>
+        </div>
+        <div className="flex items-center justify-between">
+          <span className="flex items-center gap-1 text-kisan-200"><Calendar className="w-3.5 h-3.5 text-amber-400" /> Date</span>
+          <span className="font-semibold text-amber-200">{token.bookingDate}</span>
         </div>
         <div className="flex items-center justify-between">
           <span className="flex items-center gap-1 text-kisan-200"><Clock className="w-3.5 h-3.5 text-amber-400" /> Slot Window</span>

@@ -9,7 +9,7 @@ from app.models.farmer import Farmer
 
 @pytest.mark.asyncio
 async def test_farmer_send_otp_endpoint():
-    """Verify farmer send OTP endpoint dispatches OTP code for registration and enforces registered login check."""
+    """Verify farmer send OTP endpoint dispatches OTP code for both registered and unregistered farmers."""
     mock_db = AsyncMock()
     mock_result_none = MagicMock()
     mock_result_none.scalar_one_or_none.return_value = None
@@ -35,12 +35,14 @@ async def test_farmer_send_otp_endpoint():
             assert "debug_otp" in data
             assert data["phone"] == "9998887771"
 
-            # 2. Existing Farmer Login with unregistered phone -> 404
+            # 2. Direct Farmer Login with unregistered phone -> 200 (allowed directly via OTP)
             unreg_res = await client.post(
                 f"{settings.API_V1_STR}/auth/farmer/otp/send",
                 json={"phone": "0000000000", "is_registration": False}
             )
-            assert unreg_res.status_code == 404
+            assert unreg_res.status_code == 200
+            unreg_data = unreg_res.json()
+            assert "debug_otp" in unreg_data
 
             # 3. Existing Farmer Login with registered phone -> 200
             mock_result_farmer = MagicMock()
@@ -62,7 +64,7 @@ async def test_farmer_send_otp_endpoint():
 
 @pytest.mark.asyncio
 async def test_farmer_verify_otp_endpoint_mocked_db():
-    """Verify farmer OTP verification route logic with mocked DB session."""
+    """Verify farmer OTP verification route logic for registered and unregistered farmers."""
     # Create mock DB session
     mock_db = AsyncMock()
     mock_result = MagicMock()
@@ -86,6 +88,7 @@ async def test_farmer_verify_otp_endpoint_mocked_db():
     try:
         transport = ASGITransport(app=app)
         async with AsyncClient(transport=transport, base_url="http://test") as client:
+            # 1. Registered farmer verify
             response = await client.post(
                 f"{settings.API_V1_STR}/auth/farmer/otp/verify",
                 json={"phone": "9876543210", "otp": "123456"}
@@ -95,6 +98,20 @@ async def test_farmer_verify_otp_endpoint_mocked_db():
             assert "access_token" in data
             assert data["phone"] == "9876543210"
             assert data["token_type"] == "bearer"
+
+            # 2. Unregistered farmer verify (auto-provisions)
+            mock_result_none = MagicMock()
+            mock_result_none.scalar_one_or_none.return_value = None
+            mock_db.execute.return_value = mock_result_none
+
+            response_unreg = await client.post(
+                f"{settings.API_V1_STR}/auth/farmer/otp/verify",
+                json={"phone": "9998881111", "otp": "123456"}
+            )
+            assert response_unreg.status_code == 200
+            data_unreg = response_unreg.json()
+            assert "access_token" in data_unreg
+            assert data_unreg["phone"] == "9998881111"
     finally:
         app.dependency_overrides.clear()
 
