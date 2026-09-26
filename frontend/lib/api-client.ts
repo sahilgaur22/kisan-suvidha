@@ -1,5 +1,10 @@
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api/v1";
+function getBaseUrl(): string {
+  let base = (process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api/v1").trim().replace(/\/$/, "");
+  if (!base.endsWith("/api/v1")) {
+    base = `${base}/api/v1`;
+  }
+  return base;
+}
 
 export class ApiError extends Error {
   status: number;
@@ -17,9 +22,11 @@ export async function apiClient<T = any>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<T> {
+  const baseUrl = getBaseUrl();
+  const cleanEndpoint = endpoint.replace(/^\//, "");
   const url = endpoint.startsWith("http")
     ? endpoint
-    : `${API_BASE_URL.replace(/\/$/, "")}/${endpoint.replace(/^\//, "")}`;
+    : `${baseUrl}/${cleanEndpoint}`;
 
   const headers: Record<string, string> = {
     ...(options.headers as Record<string, string>),
