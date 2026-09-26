@@ -193,7 +193,7 @@ async def send_farmer_otp(
     OTP_CACHE[clean_phone] = otp_code
 
     action_text = "registration" if is_registration else "booking slot login"
-    message = f"🌾 Kisan Suvidha: Your OTP code for {action_text} is {otp_code}. Valid for 10 minutes. Do not share."
+    message = f"Your verification code is: {otp_code}"
 
     # Dispatch SMS & WhatsApp notifications via network gateways
     try:
