@@ -47,16 +47,22 @@ async def send_sms_notification(
         url = "https://www.fast2sms.com/dev/bulkV2"
         headers = {"authorization": settings.FAST2SMS_API_KEY}
         payload = {
-            "route": "otp",
-            "variables_values": message_body,
+            "route": "q",
+            "message": message_body,
+            "language": "english",
+            "flash": 0,
             "numbers": clean_phone.replace("+91", ""),
         }
         try:
             async with httpx.AsyncClient(timeout=10.0) as client:
                 response = await client.post(url, headers=headers, json=payload)
                 if response.status_code == 200:
-                    logger.info(f"Fast2SMS dispatched to {clean_phone}")
-                    return {"status": "sent", "provider": "fast2sms"}
+                    res_json = response.json()
+                    if res_json.get("return") is True:
+                        logger.info(f"Fast2SMS dispatched to {clean_phone}")
+                        return {"status": "sent", "provider": "fast2sms"}
+                    else:
+                        logger.error(f"Fast2SMS Response: {res_json}")
                 else:
                     logger.error(f"Fast2SMS Error ({response.status_code}): {response.text}")
         except Exception as err:
